@@ -6,6 +6,8 @@ import plotly.graph_objects as go
 import requests
 import streamlit as st
 
+from bet_analytics import SORT_OPTIONS, calculate_hit_rate, sort_bets
+
 st.set_page_config(page_title="収支マップ | HAWKS AI", page_icon="💰", layout="wide")
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
@@ -139,9 +141,17 @@ if not bets:
     st.info("BET記録がまだありません。上のフォームから最初のBETを登録できます。")
     st.stop()
 
-bets = sorted(bets, key=lambda b: (str(b.get("date", "")), str(b.get("time", ""))))
+bets = sort_bets(bets, "古い日付順")
 settled = [b for b in bets if b.get("status") == "final"]
 pending = [b for b in bets if b.get("status") != "final"]
+
+sort_option = st.selectbox(
+    "履歴の並び順",
+    SORT_OPTIONS,
+    key="profit_map_sort",
+)
+sorted_settled = sort_bets(settled, sort_option)
+sorted_pending = sort_bets(pending, sort_option)
 
 if settled:
     wins = sum(1 for b in settled if b.get("result") == "win")
@@ -150,14 +160,14 @@ if settled:
     total_profit = sum(int(b.get("profit", 0) or 0) for b in settled)
     total_bet = sum(float(b.get("bet_amount", abs(float(b.get("bet_units", 0) or 0)) * 10000) or 0) for b in settled)
     decided = wins + losses
-    win_rate = (wins / decided * 100.0) if decided else 0.0
+    _, decided, hit_rate = calculate_hit_rate(settled)
     roi = (total_profit / total_bet * 100.0) if total_bet else 0.0
 
     s1, s2, s3, s4, s5 = st.columns(5)
     s1.metric("総収支", yen(total_profit))
     s2.metric("確定BET", f"{len(settled)}試合")
     s3.metric("勝敗", f"{wins}勝 {losses}敗" + (f" {pushes}分" if pushes else ""))
-    s4.metric("勝率", f"{win_rate:.1f}%" if decided else "-")
+    s4.metric("的中率", f"{hit_rate:.1f}%" if hit_rate is not None else "-")
     s5.metric("ROI", f"{roi:+.1f}%" if total_bet else "-")
 
     running = 0
@@ -189,7 +199,7 @@ if settled:
     st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("### BETした試合の詳細")
-    for bet in reversed(settled):
+    for bet in sorted_settled:
         profit_value = int(bet.get("profit", 0) or 0)
         amount = float(bet.get("bet_amount", abs(float(bet.get("bet_units", 0) or 0)) * 10000) or 0)
         team_name, opponent_name = str(bet.get("team", "-")), str(bet.get("opponent", "-"))
@@ -211,7 +221,7 @@ else:
 
 if pending:
     st.markdown("### 未確定BET")
-    for bet in reversed(pending):
+    for bet in sorted_pending:
         amount = float(bet.get("bet_amount", abs(float(bet.get("bet_units", 0) or 0)) * 10000) or 0)
         st.write(f"⏳ {bet.get('date', '-')} {bet.get('time', '-')} ｜ {bet.get('team', '-')} vs {bet.get('opponent', '-')} ｜ "
                  f"BET {yen(amount)} ｜ ハンディ {bet.get('handicap', 0)}")
