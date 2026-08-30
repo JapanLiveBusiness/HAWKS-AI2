@@ -29,5 +29,5 @@ jobs:
           python -m pip install flake8
       - name: Check Python syntax and undefined names
         run: |
-          python -m py_compile app.py bet_manager.py
-          flake8 app.py bet_manager.py --count --select=E9,F63,F7,F82 --show-source --statistics
+          python -m py_compile app.py main.py
+          flake8 app.py main.py --count --select=E9,F63,F7,F82 --show-source --statistics
