@@ -8069,6 +8069,8 @@ st.markdown(
 from pathlib import Path as BetPath
 import json as bet_json
 
+from bet_analytics import SORT_OPTIONS, calculate_hit_rate, sort_bets
+
 
 def _bet_data_dir():
     p = BetPath("/app/data")
@@ -8100,6 +8102,23 @@ st.markdown("## 💰 ベット収支管理")
 
 _bet_summary = _load_bet_json("bet_summary.json", {})
 _bet_records = _load_bet_json("bet_records.json", [])
+
+_wins, _decided_bets, _hit_rate = calculate_hit_rate(_bet_records)
+_metric_col, _sort_col = st.columns([1, 2])
+with _metric_col:
+    st.metric(
+        "的中率",
+        f"{_hit_rate:.1f}%" if _hit_rate is not None else "-",
+        help="確定したWIN／LOSSのみで計算（PUSH・未確定は除外）",
+    )
+with _sort_col:
+    _bet_sort_option = st.selectbox(
+        "履歴の並び順",
+        SORT_OPTIONS,
+        key="bet_management_sort",
+    )
+
+_display_bet_records = sort_bets(_bet_records, _bet_sort_option)
 
 _week_profit = int(
     _bet_summary.get("weekly_unsettled_profit", 0) or 0
@@ -8152,7 +8171,7 @@ _result_label = {
 }
 
 
-for idx, bet in enumerate(_bet_records):
+for idx, bet in enumerate(_display_bet_records):
 
     date = bet.get("date", "")
     time = bet.get("time", "")
@@ -8219,7 +8238,7 @@ for idx, bet in enumerate(_bet_records):
                     "未精算へ戻す",
                     key=f"bet_unsettle_{idx}"
                 ):
-                    _bet_records[idx]["settled"] = False
+                    bet["settled"] = False
                     _save_bet_json(
                         "bet_records.json",
                         _bet_records
@@ -8232,7 +8251,7 @@ for idx, bet in enumerate(_bet_records):
                     key=f"bet_settle_{idx}",
                     type="primary"
                 ):
-                    _bet_records[idx]["settled"] = True
+                    bet["settled"] = True
                     _save_bet_json(
                         "bet_records.json",
                         _bet_records
