@@ -4,12 +4,13 @@ set -euo pipefail
 APP_DIR="${APP_DIR:-/opt/ai-baseball2026}"
 DATA_DIR="${DATA_DIR:-/opt/hawks-ai/data}"
 BRANCH="${BRANCH:-main-AI-BASEBALL}"
-CONTAINER_NAME="${CONTAINER_NAME:-hawks-app}"
-IMAGE_NAME="${IMAGE_NAME:-hawks-app}"
-PORT="${PORT:-8501}"
+CONTAINER_NAME="${CONTAINER_NAME:-ai-baseball-app}"
+IMAGE_NAME="${IMAGE_NAME:-ai-baseball-app}"
+PORT="${PORT:-8502}"
 DEPLOY_SHA="${DEPLOY_SHA:-}"
 
 cd "$APP_DIR"
+mkdir -p "$DATA_DIR"
 
 echo "[deploy] fetching $BRANCH"
 git fetch origin "$BRANCH"
@@ -42,6 +43,8 @@ start_container() {
     --restart unless-stopped \
     -p "$PORT:8501" \
     -v "$DATA_DIR:/app/data" \
+    -e DATA_DIR=/app/data \
+    -e TZ=Asia/Tokyo \
     "$image"
 }
 
