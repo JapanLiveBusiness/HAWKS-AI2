@@ -1,6 +1,8 @@
 from datetime import date, datetime
+from zoneinfo import ZoneInfo
 from pathlib import Path
 import json
+import os
 import re
 
 import requests
@@ -13,7 +15,8 @@ st.set_page_config(
     layout="wide",
 )
 
-DATA_DIR = Path(__file__).resolve().parent / "data"
+JST = ZoneInfo("Asia/Tokyo")
+DATA_DIR = Path(os.environ.get("DATA_DIR", "/app/data")).expanduser().resolve()
 BETS_FILE = DATA_DIR / "bet_records.json"
 
 TEAM_NAMES = [
@@ -95,7 +98,7 @@ st.caption("日付を選ぶと、その日のNPB開催試合から選択でき�
 
 selected_date = st.date_input(
     "試合日",
-    value=date.today(),
+    value=datetime.now(JST).date(),
     key="top_manual_bet_date",
 )
 
@@ -179,7 +182,7 @@ if submitted:
         }
         records = load_bets()
         records.append({
-            "id": f"manual-{datetime.now().strftime('%Y%m%d%H%M%S%f')}",
+            "id": f"manual-{datetime.now(JST).strftime('%Y%m%d%H%M%S%f')}",
             "date": selected_date.isoformat(),
             "time": game_time.strftime("%H:%M"),
             "team": str(bet_team).strip(),
@@ -194,7 +197,7 @@ if submitted:
             "opponent_score": int(opponent_score) if status_label == "確定" else None,
             "memo": memo.strip(),
             "source": "manual-top",
-            "created_at": datetime.now().isoformat(timespec="seconds"),
+            "created_at": datetime.now(JST).isoformat(timespec="seconds"),
         })
         save_bets(records)
         st.success("BET・収支を保存しました。収支マップにも反映されています。")
