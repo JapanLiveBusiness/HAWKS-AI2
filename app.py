@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 import textwrap
 import streamlit as st
 import streamlit.components.v1 as components
@@ -21,7 +22,7 @@ from storage.game_history import (
     save_game_history as _save_game_history,
 )
 
-DATA_DIR = Path(__file__).resolve().parent / "data"
+DATA_DIR = Path(os.environ.get("DATA_DIR", "/app/data")).expanduser().resolve()
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 HISTORY_PATH = DATA_DIR / "game_history.json"
 
@@ -8073,10 +8074,7 @@ from bet_analytics import SORT_OPTIONS, calculate_hit_rate, sort_bets
 
 
 def _bet_data_dir():
-    p = BetPath("/app/data")
-    if p.exists():
-        return p
-    return BetPath("/opt/hawks-ai/data")
+    return BetPath(DATA_DIR)
 
 
 def _load_bet_json(filename, default):

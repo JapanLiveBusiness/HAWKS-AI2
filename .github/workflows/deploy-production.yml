@@ -18,6 +18,22 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
+      - name: Validate deploy secrets
+        shell: bash
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          missing=0
+          for name in DEPLOY_HOST DEPLOY_USER DEPLOY_SSH_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is not available to this workflow"
+              missing=1
+            fi
+          done
+          exit "$missing"
+
       - name: Deploy to production server
         uses: appleboy/ssh-action@v1.2.2
         env:
@@ -26,16 +42,16 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_PORT }}
+          port: ${{ secrets.DEPLOY_PORT || '22' }}
           envs: DEPLOY_SHA
           script: |
             export DEPLOY_SHA="$DEPLOY_SHA"
             export APP_DIR="/opt/ai-baseball2026"
             export DATA_DIR="/opt/hawks-ai/data"
             export BRANCH="main-AI-BASEBALL"
-            export CONTAINER_NAME="hawks-app"
-            export IMAGE_NAME="hawks-app"
-            export PORT="8501"
+            export CONTAINER_NAME="ai-baseball-app"
+            export IMAGE_NAME="ai-baseball-app"
+            export PORT="8502"
             cd "$APP_DIR"
             git fetch origin "$BRANCH"
             git show "origin/$BRANCH:scripts/deploy-production.sh" > /tmp/ai-baseball-deploy.sh
@@ -43,9 +59,11 @@ jobs:
             /tmp/ai-baseball-deploy.sh
 
       - name: Verify public site
+        env:
+          PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL || 'https://aibaseballgame.f-polaris.jp/' }}
         run: |
           for attempt in $(seq 1 20); do
-            if curl -fsS --max-time 10 https://ai-baseball.f-polaris.jp/ >/dev/null; then
+            if curl -fsS --max-time 10 "$PUBLIC_SITE_URL" >/dev/null; then
               echo "Production site is responding"
               exit 0
             fi
