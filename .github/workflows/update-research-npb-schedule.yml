@@ -1,0 +1,247 @@
+name: Update research NPB schedule and predictions
+
+on:
+  push:
+    branches:
+      - main-AI-BASEBALL
+    paths:
+      - ".github/workflows/update-research-npb-schedule.yml"
+  schedule:
+    - cron: "0 21 * * *" # 06:00 JST
+    - cron: "0 6 * * *"  # 15:00 JST
+  workflow_dispatch:
+
+# The research generator explicitly selects the regular league standings table,
+# excluding the interleague standings table on the same NPB page.
+permissions:
+  contents: write
+
+concurrency:
+  group: update-research-npb-schedule
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+      TS_OAUTH_SECRET: ${{ secrets.TS_OAUTH_SECRET }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      RESEARCH_BRANCH: private-analytics-only
+
+    steps:
+      - name: Checkout research branch
+        uses: actions/checkout@v4
+        with:
+          ref: private-analytics-only
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install data dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check requests beautifulsoup4
+
+      - name: Fetch current or next official NPB slate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/update_npb_schedule.py --output data/npb_today.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          payload = json.loads(Path("data/npb_today.json").read_text(encoding="utf-8"))
+          games = payload.get("games") or []
+          if not payload.get("date"):
+              raise SystemExit("generated schedule has no date")
+          if not games:
+              raise SystemExit("generated schedule has no games")
+          if payload.get("count") != len(games):
+              raise SystemExit("generated schedule count does not match games")
+          print(f"schedule date={payload['date']} games={len(games)}")
+          PY
+
+      - name: Fetch and merge official probable starters
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/fetch_npb_starters.py --output data/npb_starters.json || {
+            echo "::warning::NPB probable starters are not available yet; continuing without starter names"
+            printf '{"date":null,"starters":{},"source":"NPB公式 予告先発"}\n' > data/npb_starters.json
+          }
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          schedule_path = Path("data/npb_today.json")
+          starters_path = Path("data/npb_starters.json")
+          schedule = json.loads(schedule_path.read_text(encoding="utf-8"))
+          starters_payload = json.loads(starters_path.read_text(encoding="utf-8"))
+          starters = starters_payload.get("starters") or {}
+
+          merged = 0
+          if starters_payload.get("date") == schedule.get("date"):
+              for game in schedule.get("games") or []:
+                  home = str(game.get("home") or "")
+                  away = str(game.get("away") or "")
+                  if starters.get(home):
+                      game["home_starter"] = starters[home]
+                      merged += 1
+                  if starters.get(away):
+                      game["away_starter"] = starters[away]
+                      merged += 1
+                  if game.get("home_starter") or game.get("away_starter"):
+                      game["starter_source"] = starters_payload.get("source") or "NPB公式 予告先発"
+                      game["starter_source_url"] = starters_payload.get("source_url")
+          schedule["starter_updated_at"] = starters_payload.get("updated_at")
+          schedule["starter_count"] = merged
+          schedule_path.write_text(json.dumps(schedule, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          print(f"starter names merged={merged} schedule_date={schedule.get('date')} starter_date={starters_payload.get('date')}")
+          PY
+
+      - name: Generate official-standings prediction baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/generate_daily_predictions.py \
+            --schedule data/npb_today.json \
+            --output data/today_ai_predictions.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          schedule = json.loads(Path("data/npb_today.json").read_text(encoding="utf-8"))
+          pred = json.loads(Path("data/today_ai_predictions.json").read_text(encoding="utf-8"))
+          games = pred.get("games") or []
+          if pred.get("date") != schedule.get("date"):
+              raise SystemExit("prediction date does not match schedule date")
+          if len(games) != len(schedule.get("games") or []):
+              raise SystemExit("prediction game count does not match schedule")
+          ready = [row for row in games if row.get("status") == "ready"]
+          if not ready:
+              raise SystemExit("no games received a baseline prediction")
+          print(f"predictions date={pred['date']} ready={len(ready)}/{len(games)} model={pred.get('model')}")
+          PY
+
+      - name: Save daily snapshot to research branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- data/npb_today.json data/npb_starters.json data/today_ai_predictions.json; then
+            echo "No repository data change"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/npb_today.json data/npb_starters.json data/today_ai_predictions.json
+          git commit -m "Update official NPB daily research data"
+          git push origin HEAD:"$RESEARCH_BRANCH"
+
+      - name: Validate deployment secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in TS_OAUTH_CLIENT_ID TS_OAUTH_SECRET DEPLOY_USER DEPLOY_PORT DEPLOY_SSH_KEY; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is not available to this workflow"
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ env.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          timeout: 1m
+
+      - name: Resolve server-01
+        shell: bash
+        run: |
+          set -euo pipefail
+          resolved=""
+          for attempt in $(seq 1 12); do
+            resolved="$(tailscale status --json | jq -r '
+              [.Peer[] | select(.HostName == "server-01" and .Online == true) | (.TailscaleIPs // [])[0]]
+              | map(select(. != null)) | .[0] // empty
+            ')"
+            [ -n "$resolved" ] && break
+            sleep 5
+          done
+          if [ -z "$resolved" ]; then
+            echo "::error::server-01 is not visible as an online Tailscale peer"
+            exit 1
+          fi
+          nc -vz -w 10 "$resolved" "$DEPLOY_PORT"
+          echo "DEPLOY_HOST_RESOLVED=$resolved" >> "$GITHUB_ENV"
+
+      - name: Configure SSH key
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_SSH_KEY" | tr -d '\r' > "$HOME/.ssh/deploy_key"
+          chmod 600 "$HOME/.ssh/deploy_key"
+          ssh-keygen -y -f "$HOME/.ssh/deploy_key" >/dev/null
+
+      - name: Publish schedule and predictions to research data volume
+        shell: bash
+        run: |
+          set -euo pipefail
+          COMMON_OPTS=(
+            -i "$HOME/.ssh/deploy_key"
+            -o IdentitiesOnly=yes
+            -o BatchMode=yes
+            -o PreferredAuthentications=publickey
+            -o PasswordAuthentication=no
+            -o ConnectTimeout=15
+            -o StrictHostKeyChecking=no
+            -o UserKnownHostsFile=/dev/null
+          )
+          scp -P "$DEPLOY_PORT" "${COMMON_OPTS[@]}" \
+            data/npb_today.json \
+            data/npb_starters.json \
+            data/today_ai_predictions.json \
+            "$DEPLOY_USER@$DEPLOY_HOST_RESOLVED:/tmp/"
+          ssh -p "$DEPLOY_PORT" "${COMMON_OPTS[@]}" "$DEPLOY_USER@$DEPLOY_HOST_RESOLVED" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+          DATA_DIR="/opt/hawks-ai/research-data"
+          mkdir -p "$DATA_DIR"
+          for name in npb_today.json npb_starters.json today_ai_predictions.json; do
+            install -m 0644 "/tmp/$name" "$DATA_DIR/$name.tmp"
+            mv "$DATA_DIR/$name.tmp" "$DATA_DIR/$name"
+            rm -f "/tmp/$name"
+          done
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          data_dir = Path("/opt/hawks-ai/research-data")
+          schedule = json.loads((data_dir / "npb_today.json").read_text(encoding="utf-8"))
+          starters = json.loads((data_dir / "npb_starters.json").read_text(encoding="utf-8"))
+          pred = json.loads((data_dir / "today_ai_predictions.json").read_text(encoding="utf-8"))
+          games = pred.get("games") or []
+          if not schedule.get("date") or not schedule.get("games"):
+              raise SystemExit("remote schedule verification failed")
+          if pred.get("date") != schedule.get("date"):
+              raise SystemExit("remote prediction date mismatch")
+          if len(games) != len(schedule.get("games") or []):
+              raise SystemExit("remote prediction count mismatch")
+          ready = sum(1 for row in games if row.get("status") == "ready")
+          if not ready:
+              raise SystemExit("remote prediction payload has no ready games")
+          print(f"remote date={schedule['date']} games={len(games)} ready={ready} starter_date={starters.get('date')} starter_count={schedule.get('starter_count', 0)}")
+          PY
+          curl -fsS --max-time 15 http://127.0.0.1:8502/_stcore/health
+          REMOTE

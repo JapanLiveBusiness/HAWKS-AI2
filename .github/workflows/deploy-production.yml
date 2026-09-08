@@ -8,7 +8,7 @@ on:
 
 concurrency:
   group: production-ai-baseball
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -16,17 +16,23 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    env:
+      TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+      TS_OAUTH_SECRET: ${{ secrets.TS_OAUTH_SECRET }}
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+      AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
+      AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
+      AUTH0_COOKIE_SECRET: ${{ secrets.AUTH0_COOKIE_SECRET }}
     steps:
       - name: Validate deploy secrets
         shell: bash
-        env:
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
         run: |
           missing=0
-          for name in DEPLOY_HOST DEPLOY_USER DEPLOY_SSH_KEY; do
+          for name in TS_OAUTH_CLIENT_ID TS_OAUTH_SECRET DEPLOY_HOST DEPLOY_USER DEPLOY_PORT DEPLOY_SSH_KEY; do
             if [ -z "${!name}" ]; then
               echo "::error::$name is not available to this workflow"
               missing=1
@@ -34,40 +40,276 @@ jobs:
           done
           exit "$missing"
 
+      - name: Check out deployment scripts
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Connect to Tailscale with OAuth
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ env.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          timeout: 1m
+
+      - name: Resolve current server-01 peer and probe SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          resolved=""
+          for attempt in $(seq 1 12); do
+            echo "Tailscale peer discovery attempt $attempt/12"
+            resolved="$(tailscale status --json | jq -r '
+              [
+                .Peer[]
+                | select(.HostName == "server-01" and .Online == true)
+                | (.TailscaleIPs // [])[0]
+              ]
+              | map(select(. != null))
+              | .[0] // empty
+            ')"
+            if [ -n "$resolved" ]; then
+              break
+            fi
+            sleep 5
+          done
+
+          if [ -z "$resolved" ]; then
+            echo "::error::server-01 is not visible as an online Tailscale peer from tag:ci. Check the tailnet Grant destination/source before retrying deployment."
+            exit 1
+          fi
+
+          if [ "$resolved" != "$DEPLOY_HOST" ]; then
+            echo "::warning::Configured DEPLOY_HOST differs from the live server-01 Tailscale address; using the live address for this deployment"
+          fi
+
+          echo "Testing production SSH endpoint on the live server-01 Tailscale peer"
+          nc -vz -w 10 "$resolved" "$DEPLOY_PORT"
+          timeout 15 bash -c "</dev/tcp/$resolved/$DEPLOY_PORT"
+          echo "DEPLOY_HOST_RESOLVED=$resolved" >> "$GITHUB_ENV"
+
+      - name: Configure deployment SSH key
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_SSH_KEY" | tr -d '\r' > "$HOME/.ssh/deploy_key"
+          chmod 600 "$HOME/.ssh/deploy_key"
+          ssh-keygen -y -f "$HOME/.ssh/deploy_key" > "$HOME/.ssh/deploy_key.pub"
+          echo "Deployment public key fingerprint:"
+          ssh-keygen -lf "$HOME/.ssh/deploy_key.pub" -E sha256
+
+      - name: Provision Auth0 configuration when available
+        shell: bash
+        run: |
+          set -euo pipefail
+          configured=0
+          missing=0
+          for name in AUTH0_DOMAIN AUTH0_CLIENT_ID AUTH0_CLIENT_SECRET AUTH0_COOKIE_SECRET; do
+            if [ -n "${!name:-}" ]; then
+              configured=$((configured + 1))
+            else
+              missing=$((missing + 1))
+            fi
+          done
+
+          if [ "$configured" -eq 0 ]; then
+            echo "Auth0 secrets are not configured; server configuration must pass validation"
+            exit 0
+          fi
+          if [ "$missing" -ne 0 ]; then
+            echo "::error::Auth0 configuration is partial. Configure all four AUTH0_* repository secrets."
+            exit 1
+          fi
+
+          AUTH_FILE="$RUNNER_TEMP/auth0-secrets.toml"
+          export AUTH_FILE
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import tomllib
+          from auth_policy import validate_auth_config
+
+          domain = os.environ["AUTH0_DOMAIN"].strip()
+          domain = domain.removeprefix("https://").removeprefix("http://").rstrip("/")
+          if not domain or "/" in domain or any(ch.isspace() for ch in domain):
+              raise SystemExit("AUTH0_DOMAIN must be a hostname without a path")
+          cookie_secret = os.environ["AUTH0_COOKIE_SECRET"]
+          if len(cookie_secret) < 32:
+              raise SystemExit("AUTH0_COOKIE_SECRET must contain at least 32 characters")
+
+          quote = json.dumps
+          content = "\n".join(
+              [
+                  "[auth]",
+                  f"redirect_uri = {quote('https://ai-baseball.f-polaris.jp/oauth2callback')}",
+                  f"cookie_secret = {quote(cookie_secret)}",
+                  "",
+                  "[auth.auth0]",
+                  f"client_id = {quote(os.environ['AUTH0_CLIENT_ID'])}",
+                  f"client_secret = {quote(os.environ['AUTH0_CLIENT_SECRET'])}",
+                  f"server_metadata_url = {quote(f'https://{domain}/.well-known/openid-configuration')}",
+                  'client_kwargs = { "prompt" = "login" }',
+                  "",
+                  "[security]",
+                  'access_mode = "all_verified"',
+                  "session_max_age_seconds = 28800",
+                  "",
+              ]
+          )
+          try:
+              validate_auth_config(tomllib.loads(content))
+          except Exception:
+              raise SystemExit("Auth0 configuration failed validation") from None
+          Path(os.environ["AUTH_FILE"]).write_text(content, encoding="utf-8")
+          PY
+          chmod 600 "$AUTH_FILE"
+
+          COMMON_SSH_OPTS=(
+            -i "$HOME/.ssh/deploy_key"
+            -o IdentitiesOnly=yes
+            -o BatchMode=yes
+            -o PreferredAuthentications=publickey
+            -o PasswordAuthentication=no
+            -o ConnectTimeout=15
+            -o StrictHostKeyChecking=no
+            -o UserKnownHostsFile=/dev/null
+          )
+          scp -P "$DEPLOY_PORT" "${COMMON_SSH_OPTS[@]}" \
+            "$AUTH_FILE" \
+            "$DEPLOY_USER@$DEPLOY_HOST_RESOLVED:/tmp/ai-baseball-auth0.toml"
+          ssh -p "$DEPLOY_PORT" "${COMMON_SSH_OPTS[@]}" \
+            "$DEPLOY_USER@$DEPLOY_HOST_RESOLVED" \
+            'install -d -m 700 /opt/hawks-ai/auth0 && install -m 600 /tmp/ai-baseball-auth0.toml /opt/hawks-ai/auth0/secrets.toml && rm -f /tmp/ai-baseball-auth0.toml'
+          echo "Auth0 configuration installed on the production host"
+
+      - name: Provision Handenomori credentials when available
+        shell: bash
+        env:
+          HANDENOMORI_EMAIL: ${{ secrets.HANDENOMORI_EMAIL }}
+          HANDENOMORI_PASSWORD: ${{ secrets.HANDENOMORI_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "$HANDENOMORI_EMAIL" ] && [ -z "$HANDENOMORI_PASSWORD" ]; then
+            echo "Handenomori secrets not supplied; retaining server configuration"
+            exit 0
+          fi
+          if [ -z "$HANDENOMORI_EMAIL" ] || [ -z "$HANDENOMORI_PASSWORD" ]; then
+            echo "::error::Configure both HANDENOMORI_EMAIL and HANDENOMORI_PASSWORD"
+            exit 1
+          fi
+          export HANDENOMORI_STAGING_FILE="$RUNNER_TEMP/handenomori-credentials.json"
+          trap 'rm -f "$HANDENOMORI_STAGING_FILE"' EXIT
+          umask 077
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          Path(os.environ['HANDENOMORI_STAGING_FILE']).write_text(json.dumps({
+              'email': os.environ['HANDENOMORI_EMAIL'],
+              'password': os.environ['HANDENOMORI_PASSWORD'],
+          }), encoding='utf-8')
+          PY
+          # Use the same production SSH identity and connection policy as deployment.
+          COMMON_SSH_OPTS=(
+            -i "$HOME/.ssh/deploy_key"
+            -o IdentitiesOnly=yes -o BatchMode=yes
+            -o PreferredAuthentications=publickey -o PasswordAuthentication=no
+            -o ConnectTimeout=15 -o StrictHostKeyChecking=no
+            -o UserKnownHostsFile=/dev/null
+          )
+          ssh -p "$DEPLOY_PORT" "${COMMON_SSH_OPTS[@]}" \
+            "$DEPLOY_USER@$DEPLOY_HOST_RESOLVED" \
+            'install -d -m 700 /opt/hawks-ai/handenomori'
+          scp -P "$DEPLOY_PORT" "${COMMON_SSH_OPTS[@]}" \
+            "$HANDENOMORI_STAGING_FILE" \
+            "$DEPLOY_USER@$DEPLOY_HOST_RESOLVED:/opt/hawks-ai/handenomori/credentials.json.next"
+          ssh -p "$DEPLOY_PORT" "${COMMON_SSH_OPTS[@]}" \
+            "$DEPLOY_USER@$DEPLOY_HOST_RESOLVED" \
+            'chmod 600 /opt/hawks-ai/handenomori/credentials.json.next && mv -f /opt/hawks-ai/handenomori/credentials.json.next /opt/hawks-ai/handenomori/credentials.json'
+          echo "Handenomori credentials installed; values are not logged"
+
       - name: Deploy to production server
-        uses: appleboy/ssh-action@v1.2.2
+        shell: bash
         env:
           DEPLOY_SHA: ${{ github.sha }}
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_PORT || '22' }}
-          envs: DEPLOY_SHA
-          script: |
-            export DEPLOY_SHA="$DEPLOY_SHA"
-            export APP_DIR="/opt/ai-baseball2026"
-            export DATA_DIR="/opt/hawks-ai/data"
-            export BRANCH="main-AI-BASEBALL"
-            export CONTAINER_NAME="ai-baseball-app"
-            export IMAGE_NAME="ai-baseball-app"
-            export PORT="8502"
-            cd "$APP_DIR"
-            git fetch origin "$BRANCH"
-            git show "origin/$BRANCH:scripts/deploy-production.sh" > /tmp/ai-baseball-deploy.sh
-            chmod +x /tmp/ai-baseball-deploy.sh
-            /tmp/ai-baseball-deploy.sh
-
-      - name: Verify public site
-        env:
-          PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL || 'https://aibaseballgame.f-polaris.jp/' }}
         run: |
-          for attempt in $(seq 1 20); do
-            if curl -fsS --max-time 10 "$PUBLIC_SITE_URL" >/dev/null; then
-              echo "Production site is responding"
-              exit 0
+          set -euo pipefail
+          BUNDLE_PATH="$RUNNER_TEMP/ai-baseball-deploy.bundle"
+          git bundle create "$BUNDLE_PATH" "refs/heads/$GITHUB_REF_NAME"
+          scp \
+            -P "$DEPLOY_PORT" \
+            -i "$HOME/.ssh/deploy_key" \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o PreferredAuthentications=publickey \
+            -o PasswordAuthentication=no \
+            -o ConnectTimeout=15 \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            "$BUNDLE_PATH" \
+            "$DEPLOY_USER@$DEPLOY_HOST_RESOLVED:/tmp/ai-baseball-deploy.bundle"
+
+          ssh \
+            -i "$HOME/.ssh/deploy_key" \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o PreferredAuthentications=publickey \
+            -o PasswordAuthentication=no \
+            -o ConnectTimeout=15 \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            "$DEPLOY_USER@$DEPLOY_HOST_RESOLVED" \
+            "DEPLOY_SHA='$DEPLOY_SHA' SKIP_GIT_FETCH=1 bash -s" <<'REMOTE'
+          set -euo pipefail
+          export APP_DIR="/home/user/apps/AI-BASEBALL2026"
+          export DATA_DIR="/opt/hawks-ai/data"
+          export SHARED_DATA_DIR="/opt/hawks-ai/research-data"
+          export BRANCH="main-AI-BASEBALL"
+          export CONTAINER_NAME="hawks-app"
+          export IMAGE_NAME="hawks-app"
+          export PORT="8501"
+          export TRAEFIK_HOST="ai-baseball-studio.f-polaris.jp"
+          export TRAEFIK_LEGACY_HOST="ai-baseball.f-polaris.jp"
+          export REPO_URL="https://github.com/JapanLiveBusiness/AI-BASEBALL2026.git"
+
+          mkdir -p "$(dirname "$APP_DIR")"
+          if [ ! -d "$APP_DIR/.git" ]; then
+            if [ -e "$APP_DIR" ] && [ "$(find "$APP_DIR" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
+              echo "[deploy] refusing to replace non-git directory: $APP_DIR"
+              exit 1
             fi
-            sleep 3
-          done
-          echo "Production site health check failed"
-          exit 1
+            mkdir -p "$APP_DIR"
+            git init "$APP_DIR"
+            git -C "$APP_DIR" remote add origin "$REPO_URL"
+          else
+            current_origin="$(git -C "$APP_DIR" remote get-url origin)"
+            if [ "$current_origin" != "$REPO_URL" ] && [ "$current_origin" != "${REPO_URL%.git}" ]; then
+              echo "[deploy] unexpected origin for $APP_DIR: $current_origin"
+              exit 1
+            fi
+          fi
+
+          cd "$APP_DIR"
+          if [ ! -f /tmp/ai-baseball-deploy.bundle ]; then
+            echo "[deploy] uploaded source bundle is missing"
+            exit 1
+          fi
+          git fetch /tmp/ai-baseball-deploy.bundle "refs/heads/$BRANCH"
+          git update-ref "refs/remotes/origin/$BRANCH" FETCH_HEAD
+          rm -f /tmp/ai-baseball-deploy.bundle
+          git show "origin/$BRANCH:scripts/deploy-production.sh" > /tmp/ai-baseball-deploy.sh
+          chmod +x /tmp/ai-baseball-deploy.sh
+          /tmp/ai-baseball-deploy.sh
+          REMOTE
+
+      - name: Verify protected public site
+        shell: bash
+        env:
+          SITE_URL: https://ai-baseball-studio.f-polaris.jp/
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+        run: bash scripts/verify-protected-site.sh
+

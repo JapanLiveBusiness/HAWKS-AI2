@@ -21,6 +21,7 @@ from storage.game_history import (
     load_game_history as _load_game_history,
     save_game_history as _save_game_history,
 )
+from display_games import select_display_games
 
 DATA_DIR = Path(os.environ.get("DATA_DIR", "/app/data")).expanduser().resolve()
 DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -2527,9 +2528,14 @@ try:
             _npb_today_path.read_text(encoding="utf-8")
         )
 
+        _display_games = select_display_games(
+            _npb_today,
+            _now_dt_jst,
+        )
+
         _hawks_game = next(
             (
-                g for g in _npb_today.get("games", [])
+                g for g in _display_games
                 if g.get("home") == "ソフトバンク"
                 or g.get("away") == "ソフトバンク"
             ),
@@ -3060,17 +3066,13 @@ def fetch_hawks_npb_data():
                 game_url = f"https://handenomori.com/jpb/{target_ymd}/"
 
                 try:
-                    r = requests.get(
-                        game_url,
-                        headers=headers,
-                        timeout=10
-                    )
-                    r.raise_for_status()
+                    from handenomori_client import fetch_member_page
+                    member_html = fetch_member_page(game_url, timeout=10)
                 except Exception:
                     continue
 
                 game_soup = BeautifulSoup(
-                    r.text,
+                    member_html,
                     "html.parser"
                 )
 
@@ -4845,7 +4847,10 @@ try:
             _npb_today_path.read_text(encoding="utf-8")
         )
 
-        _npb_today_games = _npb_today_data.get("games", []) or []
+        _npb_today_games = select_display_games(
+            _npb_today_data,
+            datetime.now(ZoneInfo("Asia/Tokyo")),
+        )
 
         # ホークス戦は上の大型カードに表示済みなので除外
         _npb_other_games = [
@@ -8077,8 +8082,22 @@ def _bet_data_dir():
     return BetPath(DATA_DIR)
 
 
+def _bet_data_file(filename):
+    from auth_session import require_auth0, user_storage_key
+
+    user = require_auth0()
+    if user.authenticated:
+        return (
+            _bet_data_dir()
+            / "users"
+            / user_storage_key(user.subject)
+            / filename
+        )
+    return _bet_data_dir() / filename
+
+
 def _load_bet_json(filename, default):
-    p = _bet_data_dir() / filename
+    p = _bet_data_file(filename)
     try:
         if p.exists():
             return bet_json.loads(p.read_text(encoding="utf-8"))
@@ -8088,7 +8107,8 @@ def _load_bet_json(filename, default):
 
 
 def _save_bet_json(filename, data):
-    p = _bet_data_dir() / filename
+    p = _bet_data_file(filename)
+    p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(
         bet_json.dumps(data, ensure_ascii=False, indent=2),
         encoding="utf-8"

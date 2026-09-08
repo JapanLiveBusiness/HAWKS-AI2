@@ -1,227 +1,118 @@
+"""Virtual-points performance dashboard. Source records are never overwritten."""
 from pathlib import Path
-from datetime import date, datetime
+from datetime import date
 import json
-
-import plotly.graph_objects as go
-import requests
+import os
 import streamlit as st
 
-from bet_analytics import SORT_OPTIONS, calculate_hit_rate, sort_bets
+from auth_session import user_bets_path
+from bet_store import BetStoreError, load_bets
+from studio_theme import apply_studio_theme, render_topbar, render_hero, render_nav_links
+from virtual_replay import load_verified_scores, load_verified_handicaps, replay_records
+from virtual_dashboard import summarize, month_options, calendar_html, history_rows
+from virtual_editor_ui import render_day_editor
+from virtual_approval_ui import render_approval
+from virtual_calendar_rank import load_calendar_predictions
+from virtual_accuracy import render_accuracy
 
-st.set_page_config(page_title="収支マップ | HAWKS AI", page_icon="💰", layout="wide")
-
-DATA_DIR = Path(__file__).resolve().parents[1] / "data"
-BETS_FILE = DATA_DIR / "bet_records.json"
-NPB_API = "https://npb.jp/bis/eng/2026/games/"
-
-
-def load_bets():
-    try:
-        data = json.loads(BETS_FILE.read_text(encoding="utf-8"))
-        return data if isinstance(data, list) else []
-    except Exception:
-        return []
-
-
-def save_bets(bets):
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    BETS_FILE.write_text(json.dumps(bets, ensure_ascii=False, indent=2), encoding="utf-8")
-
-
-def yen(value):
-    try:
-        return f"¥{int(value):,}"
-    except (TypeError, ValueError):
-        return "-"
-
-
-def result_label(value):
-    return {"win": "WIN", "loss": "LOSE", "push": "PUSH"}.get(value, "未確定")
-
-
-@st.cache_data(ttl=1800, show_spinner=False)
-def fetch_games(selected_date):
-    """NPB公式日程ページから選択日の開催試合候補を取得する。取得失敗時は手動入力へフォールバック。"""
-    from bs4 import BeautifulSoup
-
-    target = selected_date.strftime("%Y%m%d")
-    games = []
-    try:
-        url = f"https://npb.jp/bis/eng/2026/games/gm{target}.html"
-        response = requests.get(url, timeout=8)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, "html.parser")
-        text = soup.get_text(" ", strip=True)
-        teams = [
-            "Hawks", "Fighters", "Marines", "Eagles", "Buffaloes", "Lions",
-            "Giants", "Tigers", "BayStars", "Carp", "Swallows", "Dragons",
-        ]
-        found = [team for team in teams if team in text]
-        for i in range(0, len(found) - 1, 2):
-            games.append({"home": found[i], "away": found[i + 1], "time": ""})
-    except Exception:
-        pass
-    return games
-
-
-st.title("💰 収支マップ")
-st.caption("BETした試合の収支確認と、当日のBET・収支を手動登録できます。")
-
-with st.expander("➕ 当日のBET・収支を手動入力", expanded=True):
-    selected_date = st.date_input("試合日", value=date.today(), key="manual_bet_date")
-    games = fetch_games(selected_date)
-
-    if games:
-        game_labels = [f"{g['home']} vs {g['away']}" + (f" ({g['time']})" if g.get('time') else "") for g in games]
-        game_choice = st.selectbox("開催試合", game_labels)
-        selected_game = games[game_labels.index(game_choice)]
-        default_team = selected_game["home"]
-        default_opponent = selected_game["away"]
-        st.caption("選択した日付のNPB開催試合から選択できます。")
-    else:
-        st.info("この日付の開催試合を自動取得できませんでした。対戦カードを手動入力できます。")
-        default_team = ""
-        default_opponent = ""
-
-    with st.form("manual_bet_form", clear_on_submit=False):
-        c1, c2 = st.columns(2)
-        team = c1.text_input("BET先 / チーム", value=default_team)
-        opponent = c2.text_input("対戦相手", value=default_opponent)
-
-        c3, c4, c5 = st.columns(3)
-        game_time = c3.time_input("試合開始時刻", value=datetime.strptime("18:00", "%H:%M").time())
-        bet_amount = c4.number_input("BET金額（円）", min_value=0, step=1000, value=10000)
-        handicap = c5.number_input("ハンディ", step=0.5, value=0.0)
-
-        c6, c7, c8 = st.columns(3)
-        status_label = c6.selectbox("状態", ["未確定", "確定"])
-        result_display = c7.selectbox("結果", ["未確定", "WIN", "LOSE", "PUSH"])
-        profit = c8.number_input("当日の損益（円）", step=1000, value=0)
-
-        c9, c10 = st.columns(2)
-        team_score = c9.number_input("BET先チーム得点", min_value=0, step=1, value=0)
-        opponent_score = c10.number_input("対戦相手得点", min_value=0, step=1, value=0)
-        memo = st.text_area("メモ / その他情報", placeholder="オッズ、BET理由、ブックメーカー、補足など")
-
-        submitted = st.form_submit_button("このBET・収支を保存", type="primary", use_container_width=True)
-
-    if submitted:
-        if not team.strip() or not opponent.strip():
-            st.error("BET先と対戦相手を入力してください。")
-        elif status_label == "確定" and result_display == "未確定":
-            st.error("確定BETでは結果（WIN / LOSE / PUSH）を選択してください。")
-        else:
-            result_map = {"WIN": "win", "LOSE": "loss", "PUSH": "push", "未確定": None}
-            record = {
-                "id": f"manual-{datetime.now().strftime('%Y%m%d%H%M%S%f')}",
-                "date": selected_date.isoformat(),
-                "time": game_time.strftime("%H:%M"),
-                "team": team.strip(),
-                "opponent": opponent.strip(),
-                "handicap": handicap,
-                "bet_units": float(bet_amount) / 10000.0,
-                "bet_amount": int(bet_amount),
-                "status": "final" if status_label == "確定" else "pending",
-                "result": result_map[result_display],
-                "profit": int(profit) if status_label == "確定" else 0,
-                "team_score": int(team_score) if status_label == "確定" else None,
-                "opponent_score": int(opponent_score) if status_label == "確定" else None,
-                "memo": memo.strip(),
-                "source": "manual",
-                "created_at": datetime.now().isoformat(timespec="seconds"),
-            }
-            current = load_bets()
-            current.append(record)
-            save_bets(current)
-            st.success(f"{selected_date.isoformat()} {team} vs {opponent} のBETを保存しました。")
-            st.rerun()
-
-bets = load_bets()
-if not bets:
-    st.info("BET記録がまだありません。上のフォームから最初のBETを登録できます。")
+st.set_page_config(page_title="収支マップ | 仮想ポイント", page_icon="📊", layout="wide")
+apply_studio_theme()
+auth_user = render_topbar("VIRTUAL POINTS / PERFORMANCE")
+render_hero("収支マップ", "9回までの公式得点と画像ルールで、仮想ポイントを振り返る。",
+            kicker="AI BASEBALL STUDIO / VIRTUAL GAME", accent="POINTS")
+render_nav_links()
+st.caption("換金・景品交換のない仮想ゲーム専用。カレンダーの日付を押すと内容を編集できます。元履歴と編集履歴は保持します。")
+if st.session_state.pop("virtual_edit_saved", None):
+    st.success("保存しました。カレンダーと集計を再計算しました。")
+st.markdown("""
+<style>
+.vp-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:16px 0}
+.vp-weekday{text-align:center;font-size:12px;color:#667085}
+.vp-cell{min-height:96px;background:#f8fafc;border:1px solid #dce3eb;border-radius:10px;padding:10px;color:#253044}
+.vp-cell strong,.vp-cell small{display:block;margin-top:10px;overflow-wrap:anywhere}
+.vp-cell strong{font-size:14px}.vp-cell small{font-size:11px;color:#6b5310}
+.vp-positive{background:#edf9f3;border-color:#b3dfc7}.vp-positive strong{color:#146c43}
+.vp-negative{background:#fff1f0;border-color:#f1c6c2}.vp-negative strong{color:#ad332b}
+.vp-empty{border:none;background:transparent}
+a.vp-cell{text-decoration:none!important;display:block;color:#253044!important}
+a.vp-cell:hover,a.vp-cell:focus-visible{outline:3px solid #c99300;outline-offset:1px}
+@media(max-width:600px){.vp-calendar{gap:3px}.vp-cell{padding:5px;min-height:92px;border-radius:6px}
+.vp-cell strong{font-size:10px}.vp-cell small{font-size:9px}}
+</style>
+""", unsafe_allow_html=True)
+data_dir = Path("/app/data") if Path("/app/data").exists() else Path(__file__).resolve().parents[1] / "data"
+bets_path = user_bets_path(data_dir, auth_user)
+try:
+    edit_day = date.fromisoformat(st.query_params.get("edit_date", "")).isoformat()
+except ValueError:
+    edit_day = None
+try:
+    originals = load_bets(bets_path)
+    report = replay_records(originals, load_verified_scores(), handicaps=load_verified_handicaps())
+except (BetStoreError, OSError, ValueError) as exc:
+    st.error(f"履歴または確認済み得点を読み込めません: {exc}")
     st.stop()
 
-bets = sort_bets(bets, "古い日付順")
-settled = [b for b in bets if b.get("status") == "final"]
-pending = [b for b in bets if b.get("status") != "final"]
+all_rows = report["results"]
+calendar_predictions = load_calendar_predictions(data_dir, Path(os.getenv("AI_BASEBALL_SHARED_DATA_DIR", "/app/shared-data")))
+with st.expander("適用ルール・データ範囲"):
+    st.write("1〜9回の得点のみを使用し、延長を除外します。1.5と1半は別ルールです。")
+    st.write("追加確認済み: 同点・0.2もらいは2分勝ち。100,000ポイントなら100,000×0.2×0.9＝18,000ポイント。0.2出しの同点は20,000ポイント減です。")
+    st.write("プラス分のポイント付与率は従来の90%を維持。部分勝敗の割合を適用し、1ポイント単位で四捨五入します。")
+    st.write("確認済み得点は2026年9月1〜6日。9月7日に再取得した7件のハンデは元履歴と別に適用し、履歴に保存値・適用値・出典を表示します。")
+    st.write("0.8・1.1・1.6は指定された比例配分ルールで補足しています。範囲外の得点や未対応のハンデは要確認です。")
+    st.write("元記録が未確定なら自動確定しません。中止は得点判定しません。")
+    st.caption("旧画面の円表示・最終得点による集計とは別の仮想ポイント表示です。")
 
-sort_option = st.selectbox(
-    "履歴の並び順",
-    SORT_OPTIONS,
-    key="profit_map_sort",
-)
-sorted_settled = sort_bets(settled, sort_option)
-sorted_pending = sort_bets(pending, sort_option)
+if not originals:
+    st.info("現在のアカウントには履歴がありません。")
+    st.page_link("pages/BET入力.py", label="入力ページを開く")
 
-if settled:
-    wins = sum(1 for b in settled if b.get("result") == "win")
-    losses = sum(1 for b in settled if b.get("result") == "loss")
-    pushes = sum(1 for b in settled if b.get("result") == "push")
-    total_profit = sum(int(b.get("profit", 0) or 0) for b in settled)
-    total_bet = sum(float(b.get("bet_amount", abs(float(b.get("bet_units", 0) or 0)) * 10000) or 0) for b in settled)
-    decided = wins + losses
-    _, decided, hit_rate = calculate_hit_rate(settled)
-    roi = (total_profit / total_bet * 100.0) if total_bet else 0.0
-
-    s1, s2, s3, s4, s5 = st.columns(5)
-    s1.metric("総収支", yen(total_profit))
-    s2.metric("確定BET", f"{len(settled)}試合")
-    s3.metric("勝敗", f"{wins}勝 {losses}敗" + (f" {pushes}分" if pushes else ""))
-    s4.metric("的中率", f"{hit_rate:.1f}%" if hit_rate is not None else "-")
-    s5.metric("ROI", f"{roi:+.1f}%" if total_bet else "-")
-
-    running = 0
-    x_values, y_values, hover_values = [], [], []
-    for bet in settled:
-        profit_value = int(bet.get("profit", 0) or 0)
-        running += profit_value
-        bet_date, bet_time = str(bet.get("date", "-")), str(bet.get("time", "-"))
-        team_name, opponent_name = str(bet.get("team", "-")), str(bet.get("opponent", "-"))
-        amount = float(bet.get("bet_amount", abs(float(bet.get("bet_units", 0) or 0)) * 10000) or 0)
-        team_score_value, opponent_score_value = bet.get("team_score"), bet.get("opponent_score")
-        score = f"{team_score_value} - {opponent_score_value}" if team_score_value is not None and opponent_score_value is not None else "未確定"
-        x_values.append(f"{bet_date} {bet_time}")
-        y_values.append(running)
-        hover_values.append(
-            f"<b>{team_name} vs {opponent_name}</b><br>日時: {bet_date} {bet_time}<br>BET先: {team_name}"
-            f"<br>ハンディ: {bet.get('handicap', 0)}<br>BET額: {yen(amount)}<br>スコア: {score}"
-            f"<br>結果: {result_label(bet.get('result'))}<br>この試合の損益: {yen(profit_value)}"
-            f"<br><b>累積収支: {yen(running)}</b>"
-        )
-
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=x_values, y=y_values, mode="lines+markers", customdata=hover_values,
-                             hovertemplate="%{customdata}<extra></extra>", name="累積収支"))
-    fig.add_hline(y=0, line_dash="dash", line_width=1)
-    fig.update_layout(xaxis_title="BETした試合", yaxis_title="累積収支（円）", hovermode="closest", height=500,
-                      margin=dict(l=20, r=20, t=30, b=30), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-    fig.update_yaxes(tickformat=",")
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.markdown("### BETした試合の詳細")
-    for bet in sorted_settled:
-        profit_value = int(bet.get("profit", 0) or 0)
-        amount = float(bet.get("bet_amount", abs(float(bet.get("bet_units", 0) or 0)) * 10000) or 0)
-        team_name, opponent_name = str(bet.get("team", "-")), str(bet.get("opponent", "-"))
-        team_score_value, opponent_score_value = bet.get("team_score"), bet.get("opponent_score")
-        score = f"{team_score_value} - {opponent_score_value}" if team_score_value is not None and opponent_score_value is not None else "未確定"
-        icon = "🟢" if profit_value > 0 else ("🔴" if profit_value < 0 else "⚪")
-        title = f"{icon} {bet.get('date', '-')} {bet.get('time', '-')} | {team_name} vs {opponent_name} | {yen(profit_value)}"
-        with st.expander(title):
-            c1, c2, c3, c4 = st.columns(4)
-            c1.metric("BET先", team_name)
-            c2.metric("BET額", yen(amount))
-            c3.metric("ハンディ", str(bet.get("handicap", 0)))
-            c4.metric("損益", yen(profit_value))
-            st.write(f"**試合スコア:** {score}　｜　**結果:** {result_label(bet.get('result'))}")
-            if bet.get("memo"):
-                st.write(f"**メモ:** {bet['memo']}")
-else:
-    st.info("確定済みBETはまだありません。未確定BETは下に表示されます。")
-
-if pending:
-    st.markdown("### 未確定BET")
-    for bet in sorted_pending:
-        amount = float(bet.get("bet_amount", abs(float(bet.get("bet_units", 0) or 0)) * 10000) or 0)
-        st.write(f"⏳ {bet.get('date', '-')} {bet.get('time', '-')} ｜ {bet.get('team', '-')} vs {bet.get('opponent', '-')} ｜ "
-                 f"BET {yen(amount)} ｜ ハンディ {bet.get('handicap', 0)}")
+months = month_options(all_rows)
+period = st.selectbox("集計期間", ["全期間", *months])
+rows = all_rows if period == "全期間" else [r for r in all_rows if str(r.get("date") or "").startswith(period + "-")]
+summary = summarize(rows)
+st.metric("確認済み分の増減", f"{summary['points']:+,} pt" if summary["calculated"] else "—")
+cols = st.columns(3)
+cols[0].metric("計算済み", f"{summary['calculated']} 件")
+cols[1].metric("要確認", f"{summary['review']} 件")
+cols[2].metric("未確定 / 中止", f"{summary['pending']} / {summary['cancelled']} 件")
+if summary["review"] or summary["pending"]:
+    st.warning("要確認・未確定の記録はポイント集計から除外しています。表示値は全記録の確定合計ではありません。")
+overview, history, review = st.tabs(["推移・日別カレンダー", "全履歴", "要確認一覧"])
+with overview:
+    render_accuracy(rows, originals, calendar_predictions)
+    st.subheader("累積ポイント")
+    st.caption("選択期間の開始を0として、計算できた記録だけを日付順に積み上げます。保有残高ではありません。")
+    if summary["series"]:
+        st.line_chart(summary["series"], x="日付", y="累積ポイント", height=280)
+    else:
+        st.info("この期間に計算済みの記録はありません。")
+    if months:
+        default_month = months.index(edit_day[:7]) if edit_day and edit_day[:7] in months else 0
+        calendar_month = period if period != "全期間" else st.selectbox("表示月", months, index=default_month)
+        st.caption("チーム左の記号：1・2・3…＝その日のAI勝率順位（高い順・同率は同順位）｜M＝手動入力・手動編集｜—＝試合前のAI勝率が未確認で順位なし。チーム右の％＝AI勝率です。")
+        st.markdown(calendar_html(rows, calendar_month, calendar_predictions), unsafe_allow_html=True)
+        st.caption("＋ / −は当日のポイント増減。—は計算済み記録なし。要確認・未確定・中止は別記です。")
+    if edit_day:
+        render_day_editor(edit_day, originals, all_rows, bets_path)
+with history:
+    st.caption("選択期間の全状態を表示します。元記録の点数・金額は上書きしていません。")
+    if rows:
+        st.dataframe(history_rows(rows), hide_index=True, width="stretch")
+    else:
+        st.info("表示する履歴はありません。")
+with review:
+    unresolved = [r for r in rows if r["status"] == "review"]
+    if unresolved:
+        st.dataframe(history_rows(unresolved), hide_index=True, width="stretch")
+        st.info("元のハンデ表記や9回時点の公式得点を確認するまで、推測で判定しません。")
+        original_by_id = {r['id']: r for r in originals}
+        for result in unresolved:
+            with st.expander(f"承認確認：{result['date']} {result['team']} vs {result['opponent']} · {result['id'][-6:]}"):
+                render_approval(original_by_id[result['id']], result, bets_path, 'list')
+    else:
+        st.success("この期間に要確認の記録はありません。")
+st.download_button("全期間の元履歴・再計算結果を保存（JSON）",
+                   data=json.dumps(report, ensure_ascii=False, indent=2),
+                   file_name="virtual-points-history.json", mime="application/json")

@@ -1,0 +1,294 @@
+{
+  "method": "season_walk_forward",
+  "generated_at": "2026-09-01T22:00:27.076144+00:00",
+  "source": "historical_games_2017_2026.json",
+  "source_games": 8581,
+  "evaluated_games": 7944,
+  "source_start": "2017-03-31",
+  "source_end": "2026-08-14",
+  "evaluated_seasons": [
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "recommended_model": "historical_baseline",
+  "overall": [
+    {
+      "model": "gradient_rolling",
+      "games": 7080,
+      "accuracy": 52.46,
+      "brier": 0.2656,
+      "log_loss": 0.7345
+    },
+    {
+      "model": "historical_baseline",
+      "games": 7080,
+      "accuracy": 53.59,
+      "brier": 0.249,
+      "log_loss": 0.6911
+    },
+    {
+      "model": "logistic_rolling",
+      "games": 7080,
+      "accuracy": 54.41,
+      "brier": 0.2516,
+      "log_loss": 0.6973
+    }
+  ],
+  "by_season": [
+    {
+      "season": 2018,
+      "model": "historical_baseline",
+      "train_through": 2017,
+      "games": 860,
+      "accuracy": 50.35,
+      "brier": 0.2525,
+      "log_loss": 0.6981
+    },
+    {
+      "season": 2018,
+      "model": "logistic_rolling",
+      "train_through": 2017,
+      "games": 860,
+      "accuracy": 55.7,
+      "brier": 0.2552,
+      "log_loss": 0.7073
+    },
+    {
+      "season": 2018,
+      "model": "gradient_rolling",
+      "train_through": 2017,
+      "games": 860,
+      "accuracy": 53.95,
+      "brier": 0.2914,
+      "log_loss": 0.8195
+    },
+    {
+      "season": 2019,
+      "model": "historical_baseline",
+      "train_through": 2018,
+      "games": 854,
+      "accuracy": 53.86,
+      "brier": 0.2486,
+      "log_loss": 0.6904
+    },
+    {
+      "season": 2019,
+      "model": "logistic_rolling",
+      "train_through": 2018,
+      "games": 854,
+      "accuracy": 54.45,
+      "brier": 0.2573,
+      "log_loss": 0.7099
+    },
+    {
+      "season": 2019,
+      "model": "gradient_rolling",
+      "train_through": 2018,
+      "games": 854,
+      "accuracy": 51.52,
+      "brier": 0.2807,
+      "log_loss": 0.7748
+    },
+    {
+      "season": 2020,
+      "model": "historical_baseline",
+      "train_through": 2019,
+      "games": 686,
+      "accuracy": 57.73,
+      "brier": 0.2461,
+      "log_loss": 0.6853
+    },
+    {
+      "season": 2020,
+      "model": "logistic_rolling",
+      "train_through": 2019,
+      "games": 686,
+      "accuracy": 53.5,
+      "brier": 0.2494,
+      "log_loss": 0.6922
+    },
+    {
+      "season": 2020,
+      "model": "gradient_rolling",
+      "train_through": 2019,
+      "games": 686,
+      "accuracy": 50.15,
+      "brier": 0.2688,
+      "log_loss": 0.7372
+    },
+    {
+      "season": 2021,
+      "model": "historical_baseline",
+      "train_through": 2020,
+      "games": 769,
+      "accuracy": 50.72,
+      "brier": 0.2511,
+      "log_loss": 0.6954
+    },
+    {
+      "season": 2021,
+      "model": "logistic_rolling",
+      "train_through": 2020,
+      "games": 769,
+      "accuracy": 50.33,
+      "brier": 0.26,
+      "log_loss": 0.7145
+    },
+    {
+      "season": 2021,
+      "model": "gradient_rolling",
+      "train_through": 2020,
+      "games": 769,
+      "accuracy": 49.41,
+      "brier": 0.2724,
+      "log_loss": 0.7451
+    },
+    {
+      "season": 2022,
+      "model": "historical_baseline",
+      "train_through": 2021,
+      "games": 860,
+      "accuracy": 52.44,
+      "brier": 0.2495,
+      "log_loss": 0.6922
+    },
+    {
+      "season": 2022,
+      "model": "logistic_rolling",
+      "train_through": 2021,
+      "games": 860,
+      "accuracy": 51.98,
+      "brier": 0.2549,
+      "log_loss": 0.7037
+    },
+    {
+      "season": 2022,
+      "model": "gradient_rolling",
+      "train_through": 2021,
+      "games": 860,
+      "accuracy": 52.09,
+      "brier": 0.2602,
+      "log_loss": 0.7163
+    },
+    {
+      "season": 2023,
+      "model": "historical_baseline",
+      "train_through": 2022,
+      "games": 858,
+      "accuracy": 54.9,
+      "brier": 0.2479,
+      "log_loss": 0.6889
+    },
+    {
+      "season": 2023,
+      "model": "logistic_rolling",
+      "train_through": 2022,
+      "games": 858,
+      "accuracy": 55.59,
+      "brier": 0.2482,
+      "log_loss": 0.6897
+    },
+    {
+      "season": 2023,
+      "model": "gradient_rolling",
+      "train_through": 2022,
+      "games": 858,
+      "accuracy": 53.38,
+      "brier": 0.2558,
+      "log_loss": 0.7067
+    },
+    {
+      "season": 2024,
+      "model": "historical_baseline",
+      "train_through": 2023,
+      "games": 808,
+      "accuracy": 53.84,
+      "brier": 0.2485,
+      "log_loss": 0.6902
+    },
+    {
+      "season": 2024,
+      "model": "logistic_rolling",
+      "train_through": 2023,
+      "games": 808,
+      "accuracy": 53.47,
+      "brier": 0.2469,
+      "log_loss": 0.6869
+    },
+    {
+      "season": 2024,
+      "model": "gradient_rolling",
+      "train_through": 2023,
+      "games": 808,
+      "accuracy": 53.47,
+      "brier": 0.2528,
+      "log_loss": 0.6995
+    },
+    {
+      "season": 2025,
+      "model": "historical_baseline",
+      "train_through": 2024,
+      "games": 789,
+      "accuracy": 54.88,
+      "brier": 0.2478,
+      "log_loss": 0.6887
+    },
+    {
+      "season": 2025,
+      "model": "logistic_rolling",
+      "train_through": 2024,
+      "games": 789,
+      "accuracy": 57.29,
+      "brier": 0.246,
+      "log_loss": 0.6854
+    },
+    {
+      "season": 2025,
+      "model": "gradient_rolling",
+      "train_through": 2024,
+      "games": 789,
+      "accuracy": 54.63,
+      "brier": 0.2511,
+      "log_loss": 0.6966
+    },
+    {
+      "season": 2026,
+      "model": "historical_baseline",
+      "train_through": 2025,
+      "games": 596,
+      "accuracy": 54.53,
+      "brier": 0.248,
+      "log_loss": 0.6892
+    },
+    {
+      "season": 2026,
+      "model": "logistic_rolling",
+      "train_through": 2025,
+      "games": 596,
+      "accuracy": 58.05,
+      "brier": 0.2434,
+      "log_loss": 0.6799
+    },
+    {
+      "season": 2026,
+      "model": "gradient_rolling",
+      "train_through": 2025,
+      "games": 596,
+      "accuracy": 53.19,
+      "brier": 0.2532,
+      "log_loss": 0.7007
+    }
+  ],
+  "notes": [
+    "Each season is tested using only earlier seasons for training.",
+    "Draws are excluded from binary win/loss metrics.",
+    "Future-season and final-season aggregate features are not used."
+  ]
+}

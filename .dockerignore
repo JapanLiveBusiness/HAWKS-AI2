@@ -1,0 +1,16 @@
+.git
+.env
+.env.*
+!.env.example
+**/secrets.toml
+**/*.pem
+**/*.key
+**/__pycache__
+.venv
+venv
+private
+data/users
+data/bet_records.json
+data/*.before-*.json
+**/*.backup*
+**/*.bak*

@@ -26,8 +26,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
-          python -m pip install flake8
+          python -m pip install flake8 pytest
       - name: Check Python syntax and undefined names
         run: |
-          python -m py_compile app.py main.py
-          flake8 app.py main.py --count --select=E9,F63,F7,F82 --show-source --statistics
+          python -m py_compile app.py main.py bet_analytics.py bet_store.py prediction_results.py team_insights.py pages/BET入力.py pages/収支マップ.py pages/予想結果.py pages/球団別詳細.py
+          flake8 app.py main.py bet_analytics.py bet_store.py prediction_results.py team_insights.py pages/BET入力.py pages/収支マップ.py pages/予想結果.py pages/球団別詳細.py --count --select=E9,F63,F7,F82 --show-source --statistics
+      - name: Run application tests
+        run: python -m pytest -q

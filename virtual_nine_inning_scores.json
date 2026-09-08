@@ -1,0 +1,276 @@
+{
+  "verified_on": "2026-09-07",
+  "note": "1〜9回の合計。9回裏xは追加得点なし。延長は含めない。",
+  "games": [
+    {
+      "date": "2026-09-01",
+      "home": "巨人",
+      "away": "DeNA",
+      "home_9": 4,
+      "away_9": 3,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0901/g-db-20/"
+    },
+    {
+      "date": "2026-09-01",
+      "home": "ヤクルト",
+      "away": "阪神",
+      "home_9": 2,
+      "away_9": 6,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0901/s-t-19/"
+    },
+    {
+      "date": "2026-09-01",
+      "home": "中日",
+      "away": "広島",
+      "home_9": 1,
+      "away_9": 5,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0901/d-c-20/"
+    },
+    {
+      "date": "2026-09-01",
+      "home": "日本ハム",
+      "away": "ソフトバンク",
+      "home_9": 2,
+      "away_9": 1,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0901/f-h-21/"
+    },
+    {
+      "date": "2026-09-01",
+      "home": "楽天",
+      "away": "オリックス",
+      "home_9": 5,
+      "away_9": 1,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0901/e-b-22/"
+    },
+    {
+      "date": "2026-09-01",
+      "home": "ロッテ",
+      "away": "西武",
+      "home_9": 1,
+      "away_9": 0,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0901/m-l-20/"
+    },
+    {
+      "date": "2026-09-02",
+      "home": "巨人",
+      "away": "DeNA",
+      "home_9": 1,
+      "away_9": 1,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0902/g-db-21/"
+    },
+    {
+      "date": "2026-09-02",
+      "home": "ヤクルト",
+      "away": "阪神",
+      "home_9": 5,
+      "away_9": 3,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0902/s-t-20/"
+    },
+    {
+      "date": "2026-09-02",
+      "home": "中日",
+      "away": "広島",
+      "home_9": 5,
+      "away_9": 4,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0902/d-c-21/"
+    },
+    {
+      "date": "2026-09-02",
+      "home": "日本ハム",
+      "away": "ソフトバンク",
+      "home_9": 1,
+      "away_9": 1,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0902/f-h-22/"
+    },
+    {
+      "date": "2026-09-02",
+      "home": "楽天",
+      "away": "オリックス",
+      "home_9": 4,
+      "away_9": 0,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0902/e-b-23/"
+    },
+    {
+      "date": "2026-09-03",
+      "home": "ヤクルト",
+      "away": "阪神",
+      "home_9": 4,
+      "away_9": 7,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0903/s-t-21/"
+    },
+    {
+      "date": "2026-09-03",
+      "home": "中日",
+      "away": "広島",
+      "home_9": 2,
+      "away_9": 5,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0903/d-c-22/"
+    },
+    {
+      "date": "2026-09-04",
+      "home": "ヤクルト",
+      "away": "中日",
+      "home_9": 1,
+      "away_9": 1,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0904/s-d-20/"
+    },
+    {
+      "date": "2026-09-04",
+      "home": "広島",
+      "away": "巨人",
+      "home_9": 1,
+      "away_9": 3,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0904/c-g-18/"
+    },
+    {
+      "date": "2026-09-04",
+      "home": "楽天",
+      "away": "日本ハム",
+      "home_9": 2,
+      "away_9": 5,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0904/e-f-20/"
+    },
+    {
+      "date": "2026-09-04",
+      "home": "オリックス",
+      "away": "ロッテ",
+      "home_9": 3,
+      "away_9": 1,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0904/b-m-21/"
+    },
+    {
+      "date": "2026-09-04",
+      "home": "ソフトバンク",
+      "away": "西武",
+      "home_9": 8,
+      "away_9": 2,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0904/h-l-21/"
+    },
+    {
+      "date": "2026-09-05",
+      "home": "ヤクルト",
+      "away": "中日",
+      "home_9": 4,
+      "away_9": 8,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0905/s-d-21/"
+    },
+    {
+      "date": "2026-09-05",
+      "home": "阪神",
+      "away": "DeNA",
+      "home_9": 2,
+      "away_9": 3,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0905/t-db-19/"
+    },
+    {
+      "date": "2026-09-05",
+      "home": "広島",
+      "away": "巨人",
+      "home_9": 5,
+      "away_9": 5,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0905/c-g-19/"
+    },
+    {
+      "date": "2026-09-05",
+      "home": "楽天",
+      "away": "日本ハム",
+      "home_9": 2,
+      "away_9": 5,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0905/e-f-21/"
+    },
+    {
+      "date": "2026-09-05",
+      "home": "オリックス",
+      "away": "ロッテ",
+      "home_9": 6,
+      "away_9": 6,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0905/b-m-22/"
+    },
+    {
+      "date": "2026-09-05",
+      "home": "ソフトバンク",
+      "away": "西武",
+      "home_9": 2,
+      "away_9": 0,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0905/h-l-22/"
+    },
+    {
+      "date": "2026-09-06",
+      "home": "ヤクルト",
+      "away": "中日",
+      "home_9": null,
+      "away_9": null,
+      "status": "cancelled",
+      "source": "https://npb.jp/scores/2026/0906/s-d-22/"
+    },
+    {
+      "date": "2026-09-06",
+      "home": "阪神",
+      "away": "DeNA",
+      "home_9": 1,
+      "away_9": 4,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0906/t-db-20/"
+    },
+    {
+      "date": "2026-09-06",
+      "home": "広島",
+      "away": "巨人",
+      "home_9": 0,
+      "away_9": 4,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0906/c-g-20/"
+    },
+    {
+      "date": "2026-09-06",
+      "home": "楽天",
+      "away": "日本ハム",
+      "home_9": 3,
+      "away_9": 6,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0906/e-f-22/"
+    },
+    {
+      "date": "2026-09-06",
+      "home": "オリックス",
+      "away": "ロッテ",
+      "home_9": 0,
+      "away_9": 3,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0906/b-m-23/"
+    },
+    {
+      "date": "2026-09-06",
+      "home": "ソフトバンク",
+      "away": "西武",
+      "home_9": 2,
+      "away_9": 5,
+      "status": "final",
+      "source": "https://npb.jp/scores/2026/0906/h-l-23/"
+    }
+  ]
+}

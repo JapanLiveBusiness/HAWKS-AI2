@@ -1,0 +1,62 @@
+{
+  "fetched_date_jst": "2026-09-07",
+  "source": "ハンデの森（会員ログイン後の過去データ）",
+  "records": [
+    {
+      "date": "2026-09-06",
+      "team": "楽天",
+      "opponent": "日本ハム",
+      "giving_team": "日本ハム",
+      "handicap_raw": "-0.8",
+      "source_url": "https://handenomori.com/jpb/20260906/"
+    },
+    {
+      "date": "2026-09-05",
+      "team": "オリックス",
+      "opponent": "ロッテ",
+      "giving_team": "オリックス",
+      "handicap_raw": "0.8",
+      "source_url": "https://handenomori.com/jpb/20260905/"
+    },
+    {
+      "date": "2026-09-05",
+      "team": "ソフトバンク",
+      "opponent": "西武",
+      "giving_team": "ソフトバンク",
+      "handicap_raw": "0.8",
+      "source_url": "https://handenomori.com/jpb/20260905/"
+    },
+    {
+      "date": "2026-09-04",
+      "team": "ソフトバンク",
+      "opponent": "西武",
+      "giving_team": "ソフトバンク",
+      "handicap_raw": "1.6",
+      "source_url": "https://handenomori.com/jpb/20260904/"
+    },
+    {
+      "date": "2026-09-03",
+      "team": "ヤクルト",
+      "opponent": "阪神",
+      "giving_team": "阪神",
+      "handicap_raw": "-1.1",
+      "source_url": "https://handenomori.com/jpb/20260903/"
+    },
+    {
+      "date": "2026-09-01",
+      "team": "西武",
+      "opponent": "ロッテ",
+      "giving_team": "西武",
+      "handicap_raw": "0.8",
+      "source_url": "https://handenomori.com/jpb/20260901/"
+    },
+    {
+      "date": "2026-09-03",
+      "team": "中日",
+      "opponent": "広島",
+      "giving_team": null,
+      "handicap_raw": "0",
+      "source_url": "https://handenomori.com/jpb/20260903/"
+    }
+  ]
+}

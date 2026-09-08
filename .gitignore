@@ -15,10 +15,12 @@ __pycache__/
 *.crt
 secrets.toml
 .streamlit/secrets.toml
+credentials.json
 
 # ===== Virtual environments =====
 venv/
 .venv/
+.backtest-venv/
 env/
 
 # ===== Logs / temporary =====

@@ -1,2 +1,10 @@
 [server]
 enableStaticServing = true
+enableCORS = true
+enableXsrfProtection = true
+
+[client]
+showErrorDetails = "none"
+
+[browser]
+gatherUsageStats = false

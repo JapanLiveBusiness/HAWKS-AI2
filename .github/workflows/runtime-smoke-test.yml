@@ -23,8 +23,23 @@ jobs:
       - name: Build Docker image
         run: docker build -t ai-baseball2026-smoke .
 
-      - name: Start container
-        run: docker run -d --name ai-baseball2026-smoke -p 8501:8501 ai-baseball2026-smoke
+      - name: Start container with production file permissions
+        shell: bash
+        run: |
+          set -euo pipefail
+          AUTH_TEST_FILE="$RUNNER_TEMP/auth-test.toml"
+          cp .streamlit/secrets.toml.example "$AUTH_TEST_FILE"
+          # A host-owned 0600 file reproduces the production bind mount.
+          sudo chown 1001:1001 "$AUTH_TEST_FILE"
+          sudo chmod 600 "$AUTH_TEST_FILE"
+          docker run --rm --network none \
+            --security-opt no-new-privileges:true --cap-drop ALL --cap-add DAC_OVERRIDE \
+            -v "$AUTH_TEST_FILE:/app/.streamlit/secrets.toml:ro" \
+            ai-baseball2026-smoke python -c 'import streamlit as st; assert st.secrets["auth"]["auth0"]["client_id"]'
+          docker run -d --name ai-baseball2026-smoke -p 127.0.0.1:8501:8501 \
+            --security-opt no-new-privileges:true --cap-drop ALL --cap-add DAC_OVERRIDE \
+            -v "$AUTH_TEST_FILE:/app/.streamlit/secrets.toml:ro" \
+            -e AI_BASEBALL_AUTH_ENABLED=1 ai-baseball2026-smoke
 
       - name: Wait for Streamlit health endpoint
         shell: bash

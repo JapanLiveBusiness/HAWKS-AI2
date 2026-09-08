@@ -1,0 +1,207 @@
+name: Configure Cloudflare Access
+
+on:
+  workflow_dispatch:
+    inputs:
+      allowed_email:
+        description: Email address allowed to sign in to the private research site
+        required: true
+        type: string
+      enforce:
+        description: Remove any temporary public bypass after applying the private access policy
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    env:
+      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CF_SERVICE_TOKEN_ID: ${{ secrets.CLOUDFLARE_ACCESS_SERVICE_TOKEN_ID }}
+      APP_DOMAIN: ai-baseball-studio.f-polaris.jp
+      APP_NAME: AI-BASEBALL2026 Private Research Studio
+      HUMAN_POLICY_NAME: Allow private research operator
+      SERVICE_POLICY_NAME: Allow GitHub Actions service token
+      BYPASS_POLICY_NAME: Bootstrap public bypass
+    steps:
+      - name: Validate required secrets and input
+        shell: bash
+        env:
+          ALLOWED_EMAIL: ${{ inputs.allowed_email }}
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in CF_API_TOKEN CF_ACCOUNT_ID; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is not available to this workflow"
+              missing=1
+            fi
+          done
+          if ! [[ "$ALLOWED_EMAIL" =~ ^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$ ]]; then
+            echo "::error::allowed_email is not a valid email address"
+            missing=1
+          fi
+          exit "$missing"
+
+      - name: Configure Access application and policies
+        shell: bash
+        env:
+          ALLOWED_EMAIL: ${{ inputs.allowed_email }}
+          ENFORCE: ${{ inputs.enforce }}
+        run: |
+          set -euo pipefail
+
+          CF_ACCOUNT_ID="$(printf '%s' "$CF_ACCOUNT_ID" | tr -d '[:space:]')"
+          if ! [[ "$CF_ACCOUNT_ID" =~ ^[0-9a-fA-F]{32}$ ]]; then
+            echo "::error::CLOUDFLARE_ACCOUNT_ID must be a 32-character hexadecimal account ID"
+            exit 1
+          fi
+
+          api() {
+            local method="$1"
+            local path="$2"
+            local body="${3:-}"
+            local response_file
+            local status
+            response_file="$(mktemp)"
+
+            if [ -n "$body" ]; then
+              status="$(curl --silent --show-error \
+                --output "$response_file" \
+                --write-out '%{http_code}' \
+                --request "$method" \
+                "https://api.cloudflare.com/client/v4${path}" \
+                --header "Authorization: Bearer $CF_API_TOKEN" \
+                --header "Content-Type: application/json" \
+                --data "$body")"
+            else
+              status="$(curl --silent --show-error \
+                --output "$response_file" \
+                --write-out '%{http_code}' \
+                --request "$method" \
+                "https://api.cloudflare.com/client/v4${path}" \
+                --header "Authorization: Bearer $CF_API_TOKEN" \
+                --header "Content-Type: application/json")"
+            fi
+
+            if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
+              echo "::error::Cloudflare API $method $path returned HTTP $status" >&2
+              jq -c '{success, errors, messages}' "$response_file" >&2 2>/dev/null || cat "$response_file" >&2
+              rm -f "$response_file"
+              return 22
+            fi
+
+            cat "$response_file"
+            rm -f "$response_file"
+          }
+
+          echo "Verifying Cloudflare API token"
+          verify_json="$(api GET "/user/tokens/verify")"
+          if [ "$(jq -r '.result.status // empty' <<<"$verify_json")" != "active" ]; then
+            echo "::error::Cloudflare API token is not active"
+            exit 1
+          fi
+
+          echo "Looking up Access applications for the configured account"
+          apps_json="$(api GET "/accounts/$CF_ACCOUNT_ID/access/apps")"
+          app_id="$(jq -r --arg domain "$APP_DOMAIN" '.result[] | select(.domain == $domain) | .id' <<<"$apps_json" | head -n1)"
+
+          if [ -z "$app_id" ]; then
+            app_body="$(jq -n \
+              --arg name "$APP_NAME" \
+              --arg domain "$APP_DOMAIN" \
+              '{name:$name, domain:$domain, type:"self_hosted", session_duration:"12h"}')"
+            create_json="$(api POST "/accounts/$CF_ACCOUNT_ID/access/apps" "$app_body")"
+            app_id="$(jq -r '.result.id' <<<"$create_json")"
+            echo "Created Access application for $APP_DOMAIN"
+          else
+            app_body="$(jq -n \
+              --arg name "$APP_NAME" \
+              --arg domain "$APP_DOMAIN" \
+              '{name:$name, domain:$domain, type:"self_hosted", session_duration:"12h"}')"
+            api PUT "/accounts/$CF_ACCOUNT_ID/access/apps/$app_id" "$app_body" >/dev/null
+            echo "Updated existing Access application for $APP_DOMAIN"
+          fi
+
+          policies_json="$(api GET "/accounts/$CF_ACCOUNT_ID/access/apps/$app_id/policies")"
+          human_id="$(jq -r --arg name "$HUMAN_POLICY_NAME" '.result[] | select(.name == $name) | .id' <<<"$policies_json" | head -n1)"
+          human_body="$(jq -n \
+            --arg name "$HUMAN_POLICY_NAME" \
+            --arg email "$ALLOWED_EMAIL" \
+            '{name:$name, decision:"allow", include:[{email:{email:$email}}]}')"
+
+          if [ -z "$human_id" ]; then
+            api POST "/accounts/$CF_ACCOUNT_ID/access/apps/$app_id/policies" "$human_body" >/dev/null
+            echo "Created private user Allow policy"
+          else
+            api PUT "/accounts/$CF_ACCOUNT_ID/access/apps/$app_id/policies/$human_id" "$human_body" >/dev/null
+            echo "Updated private user Allow policy"
+          fi
+
+          if [ -n "${CF_SERVICE_TOKEN_ID:-}" ]; then
+            policies_json="$(api GET "/accounts/$CF_ACCOUNT_ID/access/apps/$app_id/policies")"
+            service_id="$(jq -r --arg name "$SERVICE_POLICY_NAME" '.result[] | select(.name == $name) | .id' <<<"$policies_json" | head -n1)"
+            service_body="$(jq -n \
+              --arg name "$SERVICE_POLICY_NAME" \
+              --arg token_id "$CF_SERVICE_TOKEN_ID" \
+              '{name:$name, decision:"non_identity", include:[{service_token:{token_id:$token_id}}]}')"
+            if [ -z "$service_id" ]; then
+              api POST "/accounts/$CF_ACCOUNT_ID/access/apps/$app_id/policies" "$service_body" >/dev/null
+              echo "Created Service Auth policy"
+            else
+              api PUT "/accounts/$CF_ACCOUNT_ID/access/apps/$app_id/policies/$service_id" "$service_body" >/dev/null
+              echo "Updated Service Auth policy"
+            fi
+          else
+            echo "::warning::CLOUDFLARE_ACCESS_SERVICE_TOKEN_ID is not configured; Service Auth policy skipped"
+          fi
+
+          policies_json="$(api GET "/accounts/$CF_ACCOUNT_ID/access/apps/$app_id/policies")"
+          bypass_id="$(jq -r --arg name "$BYPASS_POLICY_NAME" '.result[] | select(.name == $name) | .id' <<<"$policies_json" | head -n1)"
+
+          if [ "$ENFORCE" = "true" ]; then
+            if [ -n "$bypass_id" ]; then
+              api DELETE "/accounts/$CF_ACCOUNT_ID/access/apps/$app_id/policies/$bypass_id" >/dev/null
+              echo "Authentication ENFORCED: bootstrap public bypass removed"
+            else
+              echo "Authentication is already enforced; no bootstrap bypass exists"
+            fi
+          else
+            if [ -z "$bypass_id" ]; then
+              bypass_body="$(jq -n \
+                --arg name "$BYPASS_POLICY_NAME" \
+                '{name:$name, decision:"allow", include:[{everyone:{}}]}')"
+              api POST "/accounts/$CF_ACCOUNT_ID/access/apps/$app_id/policies" "$bypass_body" >/dev/null
+              echo "Bootstrap mode: public bypass enabled"
+            else
+              echo "Bootstrap public bypass already exists"
+            fi
+          fi
+
+      - name: Verify enforcement state
+        shell: bash
+        env:
+          ENFORCE: ${{ inputs.enforce }}
+        run: |
+          set -euo pipefail
+          status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --max-time 15 "https://$APP_DOMAIN/")"
+          echo "Unauthenticated HTTP status: $status"
+          if [ "$ENFORCE" = "true" ]; then
+            if [ "$status" = "200" ]; then
+              echo "::error::Site returned 200 without Access credentials"
+              exit 1
+            fi
+            echo "Unauthenticated request does not directly reach the application"
+          else
+            if [ "$status" -ge 200 ] && [ "$status" -lt 500 ]; then
+              echo "Bootstrap verification completed"
+            else
+              echo "::error::Site health check failed during bootstrap"
+              exit 1
+            fi
+          fi
