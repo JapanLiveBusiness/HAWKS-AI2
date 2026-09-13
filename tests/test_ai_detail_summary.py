@@ -239,3 +239,18 @@ def test_simulator_limits_context_adjustment():
 
     assert result["context_adjustment"] == 25.0
     assert result["final_probability"] == 75.0
+
+
+def test_final_history_omits_probability_without_pregame_prediction():
+    record = build_final_history_record({
+        "status": "final",
+        "date": "2026-09-07",
+        "home": "ソフトバンク",
+        "away": "西武",
+        "home_score": 3,
+        "away_score": 2,
+    })
+
+    assert "pregame_probability" not in record
+    assert "ai_probability" not in record
+    assert "base_probability" not in record

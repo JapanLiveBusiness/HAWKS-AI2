@@ -32,10 +32,18 @@ jobs:
       RESEARCH_BRANCH: private-analytics-only
 
     steps:
-      - name: Checkout research branch
+      - name: Check out generator source
         uses: actions/checkout@v4
         with:
-          ref: private-analytics-only
+          ref: main-AI-BASEBALL
+          path: source
+          fetch-depth: 1
+
+      - name: Check out research data
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RESEARCH_BRANCH }}
+          path: research
           fetch-depth: 0
 
       - name: Set up Python
@@ -47,42 +55,70 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m pip install --disable-pip-version-check requests beautifulsoup4
+          python -m pip install --disable-pip-version-check -r source/requirements-backtest.txt requests beautifulsoup4
 
       - name: Fetch current or next official NPB slate
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/update_npb_schedule.py --output data/npb_today.json
+          PYTHONPATH=source python source/scripts/refresh_npb_schedule_cache.py \
+            --output "$RUNNER_TEMP/npb_schedule_cache.json"
           python - <<'PY'
           import json
+          import os
+          from datetime import datetime
           from pathlib import Path
+          from zoneinfo import ZoneInfo
 
-          payload = json.loads(Path("data/npb_today.json").read_text(encoding="utf-8"))
-          games = payload.get("games") or []
-          if not payload.get("date"):
-              raise SystemExit("generated schedule has no date")
+          cache = json.loads(
+              (Path(os.environ["RUNNER_TEMP"]) / "npb_schedule_cache.json")
+              .read_text(encoding="utf-8")
+          )
+          today = datetime.now(ZoneInfo("Asia/Tokyo")).date().isoformat()
+          candidates = sorted({
+              str(game.get("date") or "")
+              for game in cache.get("games") or []
+              if str(game.get("date") or "") >= today
+          })
+          if not candidates:
+              raise SystemExit("official schedule has no current or future games")
+          target = today if today in candidates else candidates[0]
+          games = [
+              game for game in cache.get("games") or []
+              if str(game.get("date") or "") == target
+          ]
+          payload = {
+              "date": target,
+              "updated_at": cache.get("updated_at"),
+              "count": len(games),
+              "games": games,
+          }
+          output = Path("research/data/npb_today.json")
+          output.parent.mkdir(parents=True, exist_ok=True)
+          output.write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
           if not games:
               raise SystemExit("generated schedule has no games")
-          if payload.get("count") != len(games):
-              raise SystemExit("generated schedule count does not match games")
-          print(f"schedule date={payload['date']} games={len(games)}")
+          print(f"schedule date={target} games={len(games)}")
           PY
 
       - name: Fetch and merge official probable starters
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/fetch_npb_starters.py --output data/npb_starters.json || {
+          PYTHONPATH=source python source/scripts/fetch_npb_starters.py \
+            --output research/data/npb_starters.json || {
             echo "::warning::NPB probable starters are not available yet; continuing without starter names"
-            printf '{"date":null,"starters":{},"source":"NPB公式 予告先発"}\n' > data/npb_starters.json
+            printf '{"date":null,"starters":{},"source":"NPB公式 予告先発"}\n' > research/data/npb_starters.json
           }
           python - <<'PY'
           import json
           from pathlib import Path
 
-          schedule_path = Path("data/npb_today.json")
-          starters_path = Path("data/npb_starters.json")
+          schedule_path = Path("research/data/npb_today.json")
+          starters_path = Path("research/data/npb_starters.json")
           schedule = json.loads(schedule_path.read_text(encoding="utf-8"))
           starters_payload = json.loads(starters_path.read_text(encoding="utf-8"))
           starters = starters_payload.get("starters") or {}
@@ -103,47 +139,98 @@ jobs:
                       game["starter_source_url"] = starters_payload.get("source_url")
           schedule["starter_updated_at"] = starters_payload.get("updated_at")
           schedule["starter_count"] = merged
-          schedule_path.write_text(json.dumps(schedule, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-          print(f"starter names merged={merged} schedule_date={schedule.get('date')} starter_date={starters_payload.get('date')}")
+          schedule_path.write_text(
+              json.dumps(schedule, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          print(
+              f"starter names merged={merged} "
+              f"schedule_date={schedule.get('date')} "
+              f"starter_date={starters_payload.get('date')}"
+          )
           PY
 
-      - name: Generate official-standings prediction baseline
+      - name: Generate leakage-free prediction baseline
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/generate_daily_predictions.py \
-            --schedule data/npb_today.json \
-            --output data/today_ai_predictions.json
+          PYTHONPATH=source python source/scripts/predict_today_logistic.py \
+            --schedule research/data/npb_today.json \
+            --history source/data/historical_games_2017_2026.json \
+            --official-ranges source/data/hawks_games_context.json \
+            --validation source/data/historical_backtest_predictions.csv \
+            --output research/data/today_ai_predictions.json
           python - <<'PY'
           import json
+          from datetime import datetime
           from pathlib import Path
+          from zoneinfo import ZoneInfo
 
-          schedule = json.loads(Path("data/npb_today.json").read_text(encoding="utf-8"))
-          pred = json.loads(Path("data/today_ai_predictions.json").read_text(encoding="utf-8"))
+          schedule_path = Path("research/data/npb_today.json")
+          prediction_path = Path("research/data/today_ai_predictions.json")
+          schedule = json.loads(schedule_path.read_text(encoding="utf-8"))
+          pred = json.loads(prediction_path.read_text(encoding="utf-8"))
           games = pred.get("games") or []
           if pred.get("date") != schedule.get("date"):
               raise SystemExit("prediction date does not match schedule date")
           if len(games) != len(schedule.get("games") or []):
               raise SystemExit("prediction game count does not match schedule")
-          ready = [row for row in games if row.get("status") == "ready"]
+
+          now = datetime.now(ZoneInfo("Asia/Tokyo"))
+          schedule_index = {
+              (str(game.get("home") or ""), str(game.get("away") or "")): game
+              for game in schedule.get("games") or []
+          }
+          ready = 0
+          for row in games:
+              scheduled = schedule_index.get(
+                  (str(row.get("home") or ""), str(row.get("away") or "")),
+                  {},
+              )
+              try:
+                  start = datetime.fromisoformat(
+                      f"{schedule['date']}T{scheduled['time']}"
+                  ).replace(tzinfo=ZoneInfo("Asia/Tokyo"))
+              except (KeyError, TypeError, ValueError):
+                  row["status"] = "start_time_unknown"
+                  continue
+              if str(scheduled.get("status") or "").lower() == "scheduled" and now < start:
+                  row["status"] = "ready"
+                  ready += 1
+              else:
+                  row["status"] = "not_pregame"
+
+          prediction_path.write_text(
+              json.dumps(pred, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
           if not ready:
-              raise SystemExit("no games received a baseline prediction")
-          print(f"predictions date={pred['date']} ready={len(ready)}/{len(games)} model={pred.get('model')}")
+              print("::warning::No games remain eligible for a pregame prediction")
+          print(
+              f"predictions date={pred['date']} "
+              f"ready={ready}/{len(games)} model={pred.get('model')}"
+          )
           PY
 
       - name: Save daily snapshot to research branch
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet -- data/npb_today.json data/npb_starters.json data/today_ai_predictions.json; then
+          if git -C research diff --quiet -- \
+            data/npb_today.json \
+            data/npb_starters.json \
+            data/today_ai_predictions.json; then
             echo "No repository data change"
-            exit 0
+          else
+            git -C research config user.name "github-actions[bot]"
+            git -C research config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git -C research add \
+              data/npb_today.json \
+              data/npb_starters.json \
+              data/today_ai_predictions.json
+            git -C research commit -m "Update official NPB daily research data"
+            git -C research push origin "HEAD:$RESEARCH_BRANCH"
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/npb_today.json data/npb_starters.json data/today_ai_predictions.json
-          git commit -m "Update official NPB daily research data"
-          git push origin HEAD:"$RESEARCH_BRANCH"
 
       - name: Validate deployment secrets
         shell: bash
@@ -210,9 +297,9 @@ jobs:
             -o UserKnownHostsFile=/dev/null
           )
           scp -P "$DEPLOY_PORT" "${COMMON_OPTS[@]}" \
-            data/npb_today.json \
-            data/npb_starters.json \
-            data/today_ai_predictions.json \
+            research/data/npb_today.json \
+            research/data/npb_starters.json \
+            research/data/today_ai_predictions.json \
             "$DEPLOY_USER@$DEPLOY_HOST_RESOLVED:/tmp/"
           ssh -p "$DEPLOY_PORT" "${COMMON_OPTS[@]}" "$DEPLOY_USER@$DEPLOY_HOST_RESOLVED" 'bash -s' <<'REMOTE'
           set -euo pipefail
@@ -240,7 +327,7 @@ jobs:
               raise SystemExit("remote prediction count mismatch")
           ready = sum(1 for row in games if row.get("status") == "ready")
           if not ready:
-              raise SystemExit("remote prediction payload has no ready games")
+              print("remote warning: no games remain eligible for a pregame prediction")
           print(f"remote date={schedule['date']} games={len(games)} ready={ready} starter_date={starters.get('date')} starter_count={schedule.get('starter_count', 0)}")
           PY
           curl -fsS --max-time 15 http://127.0.0.1:8502/_stcore/health

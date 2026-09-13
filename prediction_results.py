@@ -6,6 +6,7 @@ import csv
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 from typing import Any
 
 from storage.json_store import load_json, save_json_atomic
@@ -181,6 +182,32 @@ def calibrate_home_probability(
     }
 
 
+def _captured_at(predictions: dict[str, Any]) -> datetime:
+    value = str(predictions.get("updated_at") or "")
+    try:
+        captured = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return datetime.now(timezone.utc)
+    if captured.tzinfo is None:
+        captured = captured.replace(tzinfo=ZoneInfo("Asia/Tokyo"))
+    return captured
+
+
+def _is_before_first_pitch(
+    game: dict[str, Any],
+    target_date: str,
+    captured_at: datetime,
+) -> bool:
+    game_date = str(game.get("date") or target_date)
+    game_time = str(game.get("time") or "")
+    try:
+        start = datetime.fromisoformat(f"{game_date}T{game_time}")
+    except ValueError:
+        return False
+    start = start.replace(tzinfo=ZoneInfo("Asia/Tokyo"))
+    return captured_at.astimezone(ZoneInfo("Asia/Tokyo")) < start
+
+
 def archive_predictions(
     archive: list[dict[str, Any]],
     predictions: dict[str, Any],
@@ -198,6 +225,7 @@ def archive_predictions(
         if isinstance(game, dict)
     }
     existing = {str(row.get("game_id") or "") for row in result}
+    captured_at = _captured_at(predictions)
     now = datetime.now(timezone.utc).isoformat()
     added = 0
     for prediction in predictions.get("games") or []:
@@ -210,7 +238,11 @@ def archive_predictions(
         game_id = f"{target_date}_{home}_{away}"
         if game_id in existing:
             continue
-        scheduled = schedule_index.get((home, away), {})
+        scheduled = schedule_index.get((home, away))
+        if scheduled is None or not _is_before_first_pitch(
+            scheduled, target_date, captured_at
+        ):
+            continue
         result.append(
             {
                 "game_id": game_id,

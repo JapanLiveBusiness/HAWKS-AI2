@@ -144,7 +144,7 @@ jobs:
           content = "\n".join(
               [
                   "[auth]",
-                  f"redirect_uri = {quote('https://ai-baseball.f-polaris.jp/oauth2callback')}",
+                  f"redirect_uri = {quote('https://ai-baseball-studio.f-polaris.jp/oauth2callback')}",
                   f"cookie_secret = {quote(cookie_secret)}",
                   "",
                   "[auth.auth0]",
@@ -253,6 +253,7 @@ jobs:
             "$DEPLOY_USER@$DEPLOY_HOST_RESOLVED:/tmp/ai-baseball-deploy.bundle"
 
           ssh \
+            -p "$DEPLOY_PORT" \
             -i "$HOME/.ssh/deploy_key" \
             -o IdentitiesOnly=yes \
             -o BatchMode=yes \
