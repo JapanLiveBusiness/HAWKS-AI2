@@ -17,9 +17,15 @@ def _write_json(path, payload):
 
 
 def test_settlement_uses_each_cached_game_date_and_not_envelope_date():
-    predictions = {"date": "2026-09-05", "games": [
-        {"home": "A", "away": "B", "pick": "A", "win_probability": 60}]}
-    archive, _ = archive_predictions([], predictions, {"date": "2026-09-05", "games": []})
+    predictions = {
+        "date": "2026-09-05",
+        "updated_at": "2026-09-05T17:00:00+09:00",
+        "games": [{"home": "A", "away": "B", "pick": "A", "win_probability": 60}],
+    }
+    archive, _ = archive_predictions([], predictions, {
+        "date": "2026-09-05",
+        "games": [{"home": "A", "away": "B", "time": "18:00"}],
+    })
     cache = {"date": "2026-09-06", "games": [
         {"date": "2026-09-05", "home": "A", "away": "B", "status": "final",
          "home_score": 2, "away_score": 0},
@@ -63,6 +69,7 @@ def test_sync_settles_previous_day_from_results_cache(tmp_path):
 def test_all_predictions_are_locked_and_settled_from_final_schedule():
     predictions = {
         "date": "2026-09-04",
+        "updated_at": "2026-09-04T10:00:00+09:00",
         "model": "test-model",
         "games": [
             {"home": "阪神", "away": "巨人", "pick": "阪神", "win_probability": 60, "predicted_score": "4-2", "confidence": "HIGH"},
@@ -91,8 +98,14 @@ def test_all_predictions_are_locked_and_settled_from_final_schedule():
 
 
 def test_locked_prediction_is_not_overwritten_and_draw_is_excluded():
-    predictions = {"date": "2026-09-04", "games": [{"home": "A", "away": "B", "pick": "A", "win_probability": 70}]}
-    schedule = {"date": "2026-09-04", "games": [{"home": "A", "away": "B", "status": "final", "home_score": 2, "away_score": 2}]}
+    predictions = {
+        "date": "2026-09-04",
+        "updated_at": "2026-09-04T10:00:00+09:00",
+        "games": [{"home": "A", "away": "B", "pick": "A", "win_probability": 70}],
+    }
+    schedule = {"date": "2026-09-04", "games": [
+        {"home": "A", "away": "B", "time": "18:00", "status": "final", "home_score": 2, "away_score": 2}
+    ]}
     archive, _ = archive_predictions([], predictions, schedule)
     changed_predictions = {"date": "2026-09-04", "games": [{"home": "A", "away": "B", "pick": "B", "win_probability": 90}]}
     archive, added = archive_predictions(archive, changed_predictions, schedule)
@@ -134,7 +147,11 @@ def test_sync_archives_current_research_prediction(tmp_path):
     _write_json(production / "npb_today.json", {})
     _write_json(
         research / "today_ai_predictions.json",
-        {"date": "2026-09-05", "games": [{"home": "A", "away": "B", "pick": "A", "win_probability": 60}]},
+        {
+            "date": "2026-09-05",
+            "updated_at": "2026-09-05T17:00:00+09:00",
+            "games": [{"home": "A", "away": "B", "pick": "A", "win_probability": 60}],
+        },
     )
     _write_json(
         research / "npb_today.json",
@@ -205,3 +222,20 @@ def test_load_historical_validation_accepts_utf8_bom(tmp_path):
     rows = load_historical_validation(csv_path, season=2026)
     assert len(rows) == 1
     assert rows[0]["win_probability"] == 60.0
+
+
+def test_archive_rejects_prediction_captured_after_first_pitch():
+    predictions = {
+        "date": "2026-09-05",
+        "updated_at": "2026-09-05T18:01:00+09:00",
+        "games": [{"home": "A", "away": "B", "pick": "A", "win_probability": 60}],
+    }
+    schedule = {
+        "date": "2026-09-05",
+        "games": [{"home": "A", "away": "B", "time": "18:00", "status": "live"}],
+    }
+
+    archive, added = archive_predictions([], predictions, schedule)
+
+    assert added == 0
+    assert archive == []

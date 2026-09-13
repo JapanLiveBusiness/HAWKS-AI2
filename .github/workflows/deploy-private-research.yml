@@ -78,6 +78,7 @@ jobs:
         run: |
           set -euo pipefail
           ssh \
+            -p "$DEPLOY_PORT" \
             -i "$HOME/.ssh/deploy_key" \
             -o IdentitiesOnly=yes \
             -o BatchMode=yes \
