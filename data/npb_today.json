@@ -1,60 +1,48 @@
 {
   "date": "2026-09-14",
-  "updated_at": "2026-09-14T07:44:09+09:00",
+  "updated_at": "2026-09-14T21:15:17+09:00",
   "count": 3,
   "games": [
     {
       "date": "2026-09-14",
       "time": "18:00",
-      "status": "scheduled",
+      "status": "live",
       "home": "ヤクルト",
       "away": "広島",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 0,
+      "away_score": 3,
       "venue": "神 宮",
       "source_url": "https://npb.jp/games/2026/schedule_09_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_09_detail.html",
-      "result_source": "NPB公式",
-      "home_starter": "増居　翔太",
-      "away_starter": "玉村　昇悟",
-      "starter_source": "NPB公式 予告先発",
-      "starter_source_url": "https://npb.jp/announcement/starter/"
+      "result_source": "NPB公式速報"
     },
     {
       "date": "2026-09-14",
       "time": "18:00",
-      "status": "scheduled",
+      "status": "live",
       "home": "DeNA",
       "away": "巨人",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 3,
+      "away_score": 3,
       "venue": "横 浜",
       "source_url": "https://npb.jp/games/2026/schedule_09_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_09_detail.html",
-      "result_source": "NPB公式",
-      "home_starter": "平良　拳太郎",
-      "away_starter": "西舘　勇陽",
-      "starter_source": "NPB公式 予告先発",
-      "starter_source_url": "https://npb.jp/announcement/starter/"
+      "result_source": "NPB公式速報"
     },
     {
       "date": "2026-09-14",
       "time": "18:00",
-      "status": "scheduled",
+      "status": "final",
       "home": "阪神",
       "away": "中日",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 0,
+      "away_score": 6,
       "venue": "甲子園",
       "source_url": "https://npb.jp/games/2026/schedule_09_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_09_detail.html",
-      "result_source": "NPB公式",
-      "home_starter": "伊藤　将司",
-      "away_starter": "Ｋ．マラー",
-      "starter_source": "NPB公式 予告先発",
-      "starter_source_url": "https://npb.jp/announcement/starter/"
+      "result_source": "NPB公式速報"
     }
   ],
-  "starter_updated_at": "2026-09-14T07:44:12+09:00",
-  "starter_count": 6
+  "starter_updated_at": "2026-09-14T21:15:21+09:00",
+  "starter_count": 0
 }
