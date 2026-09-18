@@ -1,60 +1,48 @@
 {
   "date": "2026-09-18",
-  "updated_at": "2026-09-18T08:16:40+09:00",
+  "updated_at": "2026-09-18T19:51:22+09:00",
   "count": 3,
   "games": [
     {
       "date": "2026-09-18",
       "time": "18:00",
-      "status": "scheduled",
+      "status": "live",
       "home": "巨人",
       "away": "中日",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 0,
+      "away_score": 0,
       "venue": "東京ドーム",
       "source_url": "https://npb.jp/games/2026/schedule_09_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_09_detail.html",
-      "result_source": "NPB公式",
-      "home_starter": "井上　温大",
-      "away_starter": "金丸　夢斗",
-      "starter_source": "NPB公式 予告先発",
-      "starter_source_url": "https://npb.jp/announcement/starter/"
+      "result_source": "NPB公式速報"
     },
     {
       "date": "2026-09-18",
       "time": "18:00",
-      "status": "scheduled",
+      "status": "live",
       "home": "DeNA",
       "away": "ヤクルト",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 0,
+      "away_score": 0,
       "venue": "横 浜",
       "source_url": "https://npb.jp/games/2026/schedule_09_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_09_detail.html",
-      "result_source": "NPB公式",
-      "home_starter": "片山　皓心",
-      "away_starter": "山野　太一",
-      "starter_source": "NPB公式 予告先発",
-      "starter_source_url": "https://npb.jp/announcement/starter/"
+      "result_source": "NPB公式速報"
     },
     {
       "date": "2026-09-18",
       "time": "18:00",
-      "status": "scheduled",
+      "status": "live",
       "home": "阪神",
       "away": "広島",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 2,
+      "away_score": 0,
       "venue": "甲子園",
       "source_url": "https://npb.jp/games/2026/schedule_09_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_09_detail.html",
-      "result_source": "NPB公式",
-      "home_starter": "大竹　耕太郎",
-      "away_starter": "森下　暢仁",
-      "starter_source": "NPB公式 予告先発",
-      "starter_source_url": "https://npb.jp/announcement/starter/"
+      "result_source": "NPB公式速報"
     }
   ],
-  "starter_updated_at": "2026-09-18T08:16:44+09:00",
-  "starter_count": 6
+  "starter_updated_at": "2026-09-18T19:51:25+09:00",
+  "starter_count": 0
 }
