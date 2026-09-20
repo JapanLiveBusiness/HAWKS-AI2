@@ -1,92 +1,72 @@
 {
   "date": "2026-09-20",
-  "updated_at": "2026-09-20T07:34:45+09:00",
+  "updated_at": "2026-09-20T19:57:21+09:00",
   "count": 6,
   "games": [
     {
       "date": "2026-09-20",
       "time": "14:00",
-      "status": "scheduled",
+      "status": "final",
       "home": "巨人",
       "away": "ヤクルト",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 3,
+      "away_score": 2,
       "venue": "東京ドーム",
       "source_url": "https://npb.jp/games/2026/schedule_09_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_09_detail.html",
-      "result_source": "NPB公式",
-      "home_starter": "小笠原　慎之介",
-      "away_starter": "高橋　奎二",
-      "starter_source": "NPB公式 予告先発",
-      "starter_source_url": "https://npb.jp/announcement/starter/"
+      "result_source": "NPB公式速報"
     },
     {
       "date": "2026-09-20",
       "time": "18:00",
-      "status": "scheduled",
+      "status": "live",
       "home": "中日",
       "away": "広島",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 6,
+      "away_score": 5,
       "venue": "バンテリンドーム",
       "source_url": "https://npb.jp/games/2026/schedule_09_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_09_detail.html",
-      "result_source": "NPB公式",
-      "home_starter": "大野　雄大",
-      "away_starter": "森　翔平",
-      "starter_source": "NPB公式 予告先発",
-      "starter_source_url": "https://npb.jp/announcement/starter/"
+      "result_source": "NPB公式速報"
     },
     {
       "date": "2026-09-20",
       "time": "18:00",
-      "status": "scheduled",
+      "status": "live",
       "home": "阪神",
       "away": "DeNA",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 3,
+      "away_score": 0,
       "venue": "甲子園",
       "source_url": "https://npb.jp/games/2026/schedule_09_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_09_detail.html",
-      "result_source": "NPB公式",
-      "home_starter": "才木　浩人",
-      "away_starter": "竹田　祐",
-      "starter_source": "NPB公式 予告先発",
-      "starter_source_url": "https://npb.jp/announcement/starter/"
+      "result_source": "NPB公式速報"
     },
     {
       "date": "2026-09-20",
       "time": "14:00",
-      "status": "scheduled",
+      "status": "final",
       "home": "日本ハム",
       "away": "オリックス",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 6,
+      "away_score": 9,
       "venue": "エスコンＦ",
       "source_url": "https://npb.jp/games/2026/schedule_09_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_09_detail.html",
-      "result_source": "NPB公式",
-      "home_starter": "有原　航平",
-      "away_starter": "髙島　泰都",
-      "starter_source": "NPB公式 予告先発",
-      "starter_source_url": "https://npb.jp/announcement/starter/"
+      "result_source": "NPB公式速報"
     },
     {
       "date": "2026-09-20",
       "time": "14:00",
-      "status": "scheduled",
+      "status": "final",
       "home": "楽天",
       "away": "ソフトバンク",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 5,
+      "away_score": 3,
       "venue": "楽天モバイル",
       "source_url": "https://npb.jp/games/2026/schedule_09_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_09_detail.html",
-      "result_source": "NPB公式",
-      "home_starter": "瀧中　瞭太",
-      "away_starter": "大津　亮介",
-      "starter_source": "NPB公式 予告先発",
-      "starter_source_url": "https://npb.jp/announcement/starter/"
+      "result_source": "NPB公式速報"
     },
     {
       "date": "2026-09-20",
@@ -99,13 +79,9 @@
       "venue": "ZOZOマリン",
       "source_url": "https://npb.jp/games/2026/schedule_09_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_09_detail.html",
-      "result_source": "NPB公式",
-      "home_starter": "Ａ．ジャクソン",
-      "away_starter": "武内　夏暉",
-      "starter_source": "NPB公式 予告先発",
-      "starter_source_url": "https://npb.jp/announcement/starter/"
+      "result_source": "NPB公式"
     }
   ],
-  "starter_updated_at": "2026-09-20T07:34:48+09:00",
-  "starter_count": 12
+  "starter_updated_at": "2026-09-20T19:57:25+09:00",
+  "starter_count": 0
 }
