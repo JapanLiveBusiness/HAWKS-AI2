@@ -1,6 +1,6 @@
 {
   "date": "2026-09-20",
-  "updated_at": "2026-09-20T19:57:21+09:00",
+  "updated_at": "2026-09-20T20:52:00+09:00",
   "count": 6,
   "games": [
     {
@@ -22,7 +22,7 @@
       "status": "live",
       "home": "中日",
       "away": "広島",
-      "home_score": 6,
+      "home_score": 8,
       "away_score": 5,
       "venue": "バンテリンドーム",
       "source_url": "https://npb.jp/games/2026/schedule_09_detail.html",
@@ -35,7 +35,7 @@
       "status": "live",
       "home": "阪神",
       "away": "DeNA",
-      "home_score": 3,
+      "home_score": 4,
       "away_score": 0,
       "venue": "甲子園",
       "source_url": "https://npb.jp/games/2026/schedule_09_detail.html",
@@ -82,6 +82,6 @@
       "result_source": "NPB公式"
     }
   ],
-  "starter_updated_at": "2026-09-20T19:57:25+09:00",
+  "starter_updated_at": "2026-09-20T20:52:04+09:00",
   "starter_count": 0
 }
