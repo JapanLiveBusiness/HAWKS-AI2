@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "updated_at": "2026-09-22T23:23:16.274819+00:00",
+  "updated_at": "2026-09-23T11:06:17.723676+00:00",
   "model": "logistic_rolling_v1",
   "training_games": 8245,
   "training_latest_date": "2026-08-20",
@@ -24,7 +24,7 @@
       "confidence": "MEDIUM",
       "model": "logistic_rolling_v1",
       "rank": 1,
-      "status": "ready"
+      "status": "not_pregame"
     },
     {
       "home": "DeNA",
@@ -41,7 +41,7 @@
       "confidence": "MEDIUM",
       "model": "logistic_rolling_v1",
       "rank": 2,
-      "status": "ready"
+      "status": "not_pregame"
     },
     {
       "home": "ソフトバンク",
@@ -58,7 +58,7 @@
       "confidence": "MEDIUM",
       "model": "logistic_rolling_v1",
       "rank": 3,
-      "status": "ready"
+      "status": "not_pregame"
     },
     {
       "home": "日本ハム",
@@ -75,7 +75,7 @@
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
       "rank": 4,
-      "status": "ready"
+      "status": "not_pregame"
     },
     {
       "home": "広島",
@@ -92,7 +92,7 @@
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
       "rank": 5,
-      "status": "ready"
+      "status": "not_pregame"
     },
     {
       "home": "ロッテ",
@@ -109,7 +109,7 @@
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
       "rank": 6,
-      "status": "ready"
+      "status": "not_pregame"
     }
   ]
 }
