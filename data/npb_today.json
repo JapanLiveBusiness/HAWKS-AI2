@@ -1,43 +1,35 @@
 {
   "date": "2026-09-24",
-  "updated_at": "2026-09-24T08:20:58+09:00",
+  "updated_at": "2026-09-24T20:23:28+09:00",
   "count": 2,
   "games": [
     {
       "date": "2026-09-24",
       "time": "18:00",
-      "status": "scheduled",
+      "status": "live",
       "home": "広島",
       "away": "巨人",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 3,
+      "away_score": 1,
       "venue": "マツダスタジアム",
       "source_url": "https://npb.jp/games/2026/schedule_09_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_09_detail.html",
-      "result_source": "NPB公式",
-      "home_starter": "森下　暢仁",
-      "away_starter": "西舘　勇陽",
-      "starter_source": "NPB公式 予告先発",
-      "starter_source_url": "https://npb.jp/announcement/starter/"
+      "result_source": "NPB公式速報"
     },
     {
       "date": "2026-09-24",
       "time": "18:00",
-      "status": "scheduled",
+      "status": "live",
       "home": "日本ハム",
       "away": "楽天",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 0,
+      "away_score": 1,
       "venue": "エスコンＦ",
       "source_url": "https://npb.jp/games/2026/schedule_09_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_09_detail.html",
-      "result_source": "NPB公式",
-      "home_starter": "達　孝太",
-      "away_starter": "前田　健太",
-      "starter_source": "NPB公式 予告先発",
-      "starter_source_url": "https://npb.jp/announcement/starter/"
+      "result_source": "NPB公式速報"
     }
   ],
-  "starter_updated_at": "2026-09-24T08:21:03+09:00",
-  "starter_count": 4
+  "starter_updated_at": "2026-09-24T20:23:31+09:00",
+  "starter_count": 0
 }
