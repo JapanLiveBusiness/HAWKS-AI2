@@ -1,6 +1,6 @@
 {
   "date": "2026-09-25",
-  "updated_at": "2026-09-24T23:41:20.487525+00:00",
+  "updated_at": "2026-09-25T11:29:20.865615+00:00",
   "model": "logistic_rolling_v1",
   "training_games": 8245,
   "training_latest_date": "2026-08-20",
@@ -24,7 +24,7 @@
       "confidence": "MEDIUM",
       "model": "logistic_rolling_v1",
       "rank": 1,
-      "status": "ready"
+      "status": "not_pregame"
     },
     {
       "home": "西武",
@@ -41,7 +41,7 @@
       "confidence": "MEDIUM",
       "model": "logistic_rolling_v1",
       "rank": 2,
-      "status": "ready"
+      "status": "not_pregame"
     },
     {
       "home": "DeNA",
@@ -58,7 +58,7 @@
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
       "rank": 3,
-      "status": "ready"
+      "status": "not_pregame"
     },
     {
       "home": "ヤクルト",
@@ -75,7 +75,7 @@
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
       "rank": 4,
-      "status": "ready"
+      "status": "not_pregame"
     },
     {
       "home": "広島",
@@ -92,7 +92,7 @@
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
       "rank": 5,
-      "status": "ready"
+      "status": "not_pregame"
     }
   ]
 }
