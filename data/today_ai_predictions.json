@@ -1,6 +1,6 @@
 {
-  "date": "2026-09-25",
-  "updated_at": "2026-09-25T11:29:20.865615+00:00",
+  "date": "2026-09-26",
+  "updated_at": "2026-09-25T23:42:19.763595+00:00",
   "model": "logistic_rolling_v1",
   "training_games": 8245,
   "training_latest_date": "2026-08-20",
@@ -9,23 +9,6 @@
   "validation_latest_date": "2026-08-14",
   "calibration": "season_10point_empirical_bayes",
   "games": [
-    {
-      "home": "オリックス",
-      "away": "ソフトバンク",
-      "pick": "ソフトバンク",
-      "win_probability": 63.9,
-      "home_win_probability": 36.1,
-      "raw_home_win_probability": 36.1,
-      "calibration_adjustment": 0.0,
-      "validation_sample_size": 9,
-      "validation_home_win_rate": null,
-      "calibration_method": "insufficient_history",
-      "predicted_score": "4-6",
-      "confidence": "MEDIUM",
-      "model": "logistic_rolling_v1",
-      "rank": 1,
-      "status": "not_pregame"
-    },
     {
       "home": "西武",
       "away": "ロッテ",
@@ -40,8 +23,8 @@
       "predicted_score": "5-3",
       "confidence": "MEDIUM",
       "model": "logistic_rolling_v1",
-      "rank": 2,
-      "status": "not_pregame"
+      "rank": 1,
+      "status": "ready"
     },
     {
       "home": "DeNA",
@@ -57,8 +40,25 @@
       "predicted_score": "3-4",
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
+      "rank": 2,
+      "status": "ready"
+    },
+    {
+      "home": "ソフトバンク",
+      "away": "楽天",
+      "pick": "ソフトバンク",
+      "win_probability": 57.1,
+      "home_win_probability": 57.1,
+      "raw_home_win_probability": 55.2,
+      "calibration_adjustment": 1.9,
+      "validation_sample_size": 275,
+      "validation_home_win_rate": 56.7,
+      "calibration_method": "season_10point_empirical_bayes",
+      "predicted_score": "5-4",
+      "confidence": "LOW",
+      "model": "logistic_rolling_v1",
       "rank": 3,
-      "status": "not_pregame"
+      "status": "ready"
     },
     {
       "home": "ヤクルト",
@@ -75,24 +75,24 @@
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
       "rank": 4,
-      "status": "not_pregame"
+      "status": "ready"
     },
     {
-      "home": "広島",
-      "away": "巨人",
-      "pick": "巨人",
-      "win_probability": 52.6,
-      "home_win_probability": 47.4,
-      "raw_home_win_probability": 49.5,
+      "home": "オリックス",
+      "away": "日本ハム",
+      "pick": "日本ハム",
+      "win_probability": 53.7,
+      "home_win_probability": 46.3,
+      "raw_home_win_probability": 48.4,
       "calibration_adjustment": -2.1,
       "validation_sample_size": 160,
       "validation_home_win_rate": 43.1,
       "calibration_method": "season_10point_empirical_bayes",
-      "predicted_score": "3-4",
+      "predicted_score": "4-5",
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
       "rank": 5,
-      "status": "not_pregame"
+      "status": "ready"
     }
   ]
 }
