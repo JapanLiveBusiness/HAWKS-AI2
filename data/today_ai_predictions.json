@@ -1,6 +1,6 @@
 {
-  "date": "2026-09-27",
-  "updated_at": "2026-09-27T11:43:02.920380+00:00",
+  "date": "2026-09-28",
+  "updated_at": "2026-09-27T23:30:04.074558+00:00",
   "model": "logistic_rolling_v1",
   "training_games": 8245,
   "training_latest_date": "2026-08-20",
@@ -9,40 +9,6 @@
   "validation_latest_date": "2026-08-14",
   "calibration": "season_10point_empirical_bayes",
   "games": [
-    {
-      "home": "ソフトバンク",
-      "away": "オリックス",
-      "pick": "ソフトバンク",
-      "win_probability": 59.6,
-      "home_win_probability": 59.6,
-      "raw_home_win_probability": 60.3,
-      "calibration_adjustment": -0.7,
-      "validation_sample_size": 144,
-      "validation_home_win_rate": 62.5,
-      "calibration_method": "season_10point_empirical_bayes",
-      "predicted_score": "6-4",
-      "confidence": "MEDIUM",
-      "model": "logistic_rolling_v1",
-      "rank": 1,
-      "status": "not_pregame"
-    },
-    {
-      "home": "巨人",
-      "away": "ヤクルト",
-      "pick": "巨人",
-      "win_probability": 57.6,
-      "home_win_probability": 57.6,
-      "raw_home_win_probability": 55.7,
-      "calibration_adjustment": 1.9,
-      "validation_sample_size": 275,
-      "validation_home_win_rate": 56.7,
-      "calibration_method": "season_10point_empirical_bayes",
-      "predicted_score": "5-4",
-      "confidence": "LOW",
-      "model": "logistic_rolling_v1",
-      "rank": 2,
-      "status": "not_pregame"
-    },
     {
       "home": "DeNA",
       "away": "広島",
@@ -57,8 +23,8 @@
       "predicted_score": "4-3",
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
-      "rank": 3,
-      "status": "not_pregame"
+      "rank": 1,
+      "status": "ready"
     },
     {
       "home": "ロッテ",
@@ -74,8 +40,8 @@
       "predicted_score": "4-5",
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
-      "rank": 4,
-      "status": "not_pregame"
+      "rank": 2,
+      "status": "ready"
     },
     {
       "home": "西武",
@@ -91,8 +57,8 @@
       "predicted_score": "5-4",
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
-      "rank": 5,
-      "status": "not_pregame"
+      "rank": 3,
+      "status": "ready"
     }
   ]
 }
