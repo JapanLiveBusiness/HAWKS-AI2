@@ -1,6 +1,6 @@
 {
-  "date": "2026-09-29",
-  "updated_at": "2026-09-29T12:26:26.083155+00:00",
+  "date": "2026-09-30",
+  "updated_at": "2026-09-30T00:01:07.375616+00:00",
   "model": "logistic_rolling_v1",
   "training_games": 8245,
   "training_latest_date": "2026-08-20",
@@ -24,41 +24,7 @@
       "confidence": "MEDIUM",
       "model": "logistic_rolling_v1",
       "rank": 1,
-      "status": "not_pregame"
-    },
-    {
-      "home": "西武",
-      "away": "オリックス",
-      "pick": "西武",
-      "win_probability": 58.1,
-      "home_win_probability": 58.1,
-      "raw_home_win_probability": 56.2,
-      "calibration_adjustment": 1.9,
-      "validation_sample_size": 275,
-      "validation_home_win_rate": 56.7,
-      "calibration_method": "season_10point_empirical_bayes",
-      "predicted_score": "5-3",
-      "confidence": "MEDIUM",
-      "model": "logistic_rolling_v1",
-      "rank": 2,
-      "status": "not_pregame"
-    },
-    {
-      "home": "巨人",
-      "away": "広島",
-      "pick": "巨人",
-      "win_probability": 57.1,
-      "home_win_probability": 57.1,
-      "raw_home_win_probability": 55.2,
-      "calibration_adjustment": 1.9,
-      "validation_sample_size": 275,
-      "validation_home_win_rate": 56.7,
-      "calibration_method": "season_10point_empirical_bayes",
-      "predicted_score": "4-3",
-      "confidence": "LOW",
-      "model": "logistic_rolling_v1",
-      "rank": 3,
-      "status": "not_pregame"
+      "status": "ready"
     },
     {
       "home": "楽天",
@@ -74,8 +40,8 @@
       "predicted_score": "5-6",
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
-      "rank": 4,
-      "status": "not_pregame"
+      "rank": 2,
+      "status": "ready"
     }
   ]
 }
