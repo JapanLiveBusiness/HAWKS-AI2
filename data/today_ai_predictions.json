@@ -1,6 +1,6 @@
 {
   "date": "2026-10-02",
-  "updated_at": "2026-10-02T00:21:10.532519+00:00",
+  "updated_at": "2026-10-02T08:23:55.101611+00:00",
   "model": "logistic_rolling_v1",
   "training_games": 8245,
   "training_latest_date": "2026-08-20",
@@ -9,23 +9,6 @@
   "validation_latest_date": "2026-08-14",
   "calibration": "season_10point_empirical_bayes",
   "games": [
-    {
-      "home": "広島",
-      "away": "中日",
-      "pick": "広島",
-      "win_probability": 61.0,
-      "home_win_probability": 61.0,
-      "raw_home_win_probability": 61.7,
-      "calibration_adjustment": -0.7,
-      "validation_sample_size": 144,
-      "validation_home_win_rate": 62.5,
-      "calibration_method": "season_10point_empirical_bayes",
-      "predicted_score": "4-3",
-      "confidence": "MEDIUM",
-      "model": "logistic_rolling_v1",
-      "rank": 1,
-      "status": "ready"
-    },
     {
       "home": "ロッテ",
       "away": "ソフトバンク",
@@ -40,7 +23,7 @@
       "predicted_score": "3-6",
       "confidence": "MEDIUM",
       "model": "logistic_rolling_v1",
-      "rank": 2,
+      "rank": 1,
       "status": "ready"
     },
     {
@@ -57,7 +40,7 @@
       "predicted_score": "4-5",
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
-      "rank": 3,
+      "rank": 2,
       "status": "ready"
     }
   ]
