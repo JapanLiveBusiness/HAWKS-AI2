@@ -1,61 +1,56 @@
 {
-  "date": "2026-10-01",
-  "updated_at": "2026-10-01T21:45:46+09:00",
-  "count": 4,
+  "date": "2026-10-02",
+  "updated_at": "2026-10-02T09:21:03+09:00",
+  "count": 3,
   "games": [
     {
-      "date": "2026-10-01",
+      "date": "2026-10-02",
       "time": "18:00",
-      "status": "live",
-      "home": "阪神",
+      "status": "scheduled",
+      "home": "ヤクルト",
       "away": "巨人",
-      "home_score": 1,
-      "away_score": 2,
-      "venue": "甲子園",
+      "home_score": null,
+      "away_score": null,
+      "venue": "神 宮",
       "source_url": "https://npb.jp/games/2026/schedule_10_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_10_detail.html",
-      "result_source": "NPB公式速報"
+      "result_source": "NPB公式",
+      "home_starter": "山野　太一",
+      "away_starter": "山﨑　伊織",
+      "starter_source": "NPB公式 予告先発",
+      "starter_source_url": "https://npb.jp/announcement/starter/"
     },
     {
-      "date": "2026-10-01",
+      "date": "2026-10-02",
       "time": "18:00",
-      "status": "final",
+      "status": "scheduled",
       "home": "広島",
       "away": "中日",
-      "home_score": 5,
-      "away_score": 1,
+      "home_score": null,
+      "away_score": null,
       "venue": "マツダスタジアム",
       "source_url": "https://npb.jp/games/2026/schedule_10_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_10_detail.html",
-      "result_source": "NPB公式速報"
+      "result_source": "NPB公式"
     },
     {
-      "date": "2026-10-01",
+      "date": "2026-10-02",
       "time": "18:00",
-      "status": "final",
-      "home": "楽天",
-      "away": "ソフトバンク",
-      "home_score": 2,
-      "away_score": 8,
-      "venue": "楽天モバイル",
-      "source_url": "https://npb.jp/games/2026/schedule_10_detail.html",
-      "official_url": "https://npb.jp/games/2026/schedule_10_detail.html",
-      "result_source": "NPB公式速報"
-    },
-    {
-      "date": "2026-10-01",
-      "time": "18:00",
-      "status": "final",
+      "status": "scheduled",
       "home": "ロッテ",
-      "away": "日本ハム",
-      "home_score": 1,
-      "away_score": 3,
+      "away": "ソフトバンク",
+      "home_score": null,
+      "away_score": null,
       "venue": "ZOZOマリン",
       "source_url": "https://npb.jp/games/2026/schedule_10_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_10_detail.html",
-      "result_source": "NPB公式速報"
+      "result_source": "NPB公式",
+      "home_starter": "田中　晴也",
+      "away_starter": "前田　悠伍",
+      "starter_source": "NPB公式 予告先発",
+      "starter_source_url": "https://npb.jp/announcement/starter/"
     }
   ],
-  "starter_updated_at": "2026-10-01T21:45:50+09:00",
-  "starter_count": 0
+  "starter_updated_at": "2026-10-02T09:21:06+09:00",
+  "starter_count": 4
 }
