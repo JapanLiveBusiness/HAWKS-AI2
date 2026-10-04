@@ -1,6 +1,6 @@
 {
-  "date": "2026-10-04",
-  "updated_at": "2026-10-04T12:02:13.897631+00:00",
+  "date": "2026-10-05",
+  "updated_at": "2026-10-04T23:43:09.692744+00:00",
   "model": "logistic_rolling_v1",
   "training_games": 8245,
   "training_latest_date": "2026-08-20",
@@ -10,21 +10,21 @@
   "calibration": "season_10point_empirical_bayes",
   "games": [
     {
-      "home": "ロッテ",
-      "away": "楽天",
-      "pick": "楽天",
-      "win_probability": 54.5,
-      "home_win_probability": 45.5,
-      "raw_home_win_probability": 47.6,
-      "calibration_adjustment": -2.1,
-      "validation_sample_size": 160,
-      "validation_home_win_rate": 43.1,
-      "calibration_method": "season_10point_empirical_bayes",
-      "predicted_score": "3-5",
-      "confidence": "LOW",
+      "home": "楽天",
+      "away": "ソフトバンク",
+      "pick": "ソフトバンク",
+      "win_probability": 62.8,
+      "home_win_probability": 37.2,
+      "raw_home_win_probability": 37.2,
+      "calibration_adjustment": 0.0,
+      "validation_sample_size": 9,
+      "validation_home_win_rate": null,
+      "calibration_method": "insufficient_history",
+      "predicted_score": "4-5",
+      "confidence": "MEDIUM",
       "model": "logistic_rolling_v1",
       "rank": 1,
-      "status": "not_pregame"
+      "status": "ready"
     },
     {
       "home": "DeNA",
@@ -41,7 +41,7 @@
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
       "rank": 2,
-      "status": "not_pregame"
+      "status": "ready"
     },
     {
       "home": "ヤクルト",
@@ -58,7 +58,24 @@
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
       "rank": 3,
-      "status": "not_pregame"
+      "status": "ready"
+    },
+    {
+      "home": "ロッテ",
+      "away": "西武",
+      "pick": "ロッテ",
+      "win_probability": 53.5,
+      "home_win_probability": 53.5,
+      "raw_home_win_probability": 51.6,
+      "calibration_adjustment": 1.9,
+      "validation_sample_size": 275,
+      "validation_home_win_rate": 56.7,
+      "calibration_method": "season_10point_empirical_bayes",
+      "predicted_score": "6-5",
+      "confidence": "LOW",
+      "model": "logistic_rolling_v1",
+      "rank": 4,
+      "status": "ready"
     }
   ]
 }
