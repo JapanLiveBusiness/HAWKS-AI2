@@ -1,6 +1,6 @@
 {
-  "date": "2026-10-05",
-  "updated_at": "2026-10-05T14:03:30.752544+00:00",
+  "date": "2026-10-06",
+  "updated_at": "2026-10-06T01:36:42.064854+00:00",
   "model": "logistic_rolling_v1",
   "training_games": 8245,
   "training_latest_date": "2026-08-20",
@@ -10,21 +10,21 @@
   "calibration": "season_10point_empirical_bayes",
   "games": [
     {
-      "home": "楽天",
-      "away": "ソフトバンク",
-      "pick": "ソフトバンク",
-      "win_probability": 62.8,
-      "home_win_probability": 37.2,
-      "raw_home_win_probability": 37.2,
-      "calibration_adjustment": 0.0,
-      "validation_sample_size": 9,
-      "validation_home_win_rate": null,
-      "calibration_method": "insufficient_history",
-      "predicted_score": "4-5",
+      "home": "阪神",
+      "away": "広島",
+      "pick": "阪神",
+      "win_probability": 59.7,
+      "home_win_probability": 59.7,
+      "raw_home_win_probability": 60.4,
+      "calibration_adjustment": -0.7,
+      "validation_sample_size": 144,
+      "validation_home_win_rate": 62.5,
+      "calibration_method": "season_10point_empirical_bayes",
+      "predicted_score": "4-3",
       "confidence": "MEDIUM",
       "model": "logistic_rolling_v1",
       "rank": 1,
-      "status": "not_pregame"
+      "status": "ready"
     },
     {
       "home": "ロッテ",
@@ -41,7 +41,7 @@
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
       "rank": 2,
-      "status": "not_pregame"
+      "status": "ready"
     }
   ]
 }
