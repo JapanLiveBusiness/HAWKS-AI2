@@ -1,6 +1,6 @@
 {
-  "date": "2026-10-06",
-  "updated_at": "2026-10-06T13:02:30.159050+00:00",
+  "date": "2026-10-07",
+  "updated_at": "2026-10-07T00:14:43.024745+00:00",
   "model": "logistic_rolling_v1",
   "training_games": 8245,
   "training_latest_date": "2026-08-20",
@@ -24,24 +24,7 @@
       "confidence": "MEDIUM",
       "model": "logistic_rolling_v1",
       "rank": 1,
-      "status": "not_pregame"
-    },
-    {
-      "home": "ロッテ",
-      "away": "西武",
-      "pick": "ロッテ",
-      "win_probability": 53.5,
-      "home_win_probability": 53.5,
-      "raw_home_win_probability": 51.6,
-      "calibration_adjustment": 1.9,
-      "validation_sample_size": 275,
-      "validation_home_win_rate": 56.7,
-      "calibration_method": "season_10point_empirical_bayes",
-      "predicted_score": "6-5",
-      "confidence": "LOW",
-      "model": "logistic_rolling_v1",
-      "rank": 2,
-      "status": "not_pregame"
+      "status": "ready"
     }
   ]
 }

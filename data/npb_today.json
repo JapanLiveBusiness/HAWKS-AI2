@@ -1,35 +1,26 @@
 {
-  "date": "2026-10-06",
-  "updated_at": "2026-10-06T22:02:24+09:00",
-  "count": 2,
+  "date": "2026-10-07",
+  "updated_at": "2026-10-07T09:14:36+09:00",
+  "count": 1,
   "games": [
     {
-      "date": "2026-10-06",
+      "date": "2026-10-07",
       "time": "18:00",
-      "status": "final",
+      "status": "scheduled",
       "home": "阪神",
       "away": "広島",
-      "home_score": 2,
-      "away_score": 1,
+      "home_score": null,
+      "away_score": null,
       "venue": "甲子園",
       "source_url": "https://npb.jp/games/2026/schedule_10_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_10_detail.html",
-      "result_source": "NPB公式速報"
-    },
-    {
-      "date": "2026-10-06",
-      "time": "18:00",
-      "status": "final",
-      "home": "ロッテ",
-      "away": "西武",
-      "home_score": 0,
-      "away_score": 3,
-      "venue": "ZOZOマリン",
-      "source_url": "https://npb.jp/games/2026/schedule_10_detail.html",
-      "official_url": "https://npb.jp/games/2026/schedule_10_detail.html",
-      "result_source": "NPB公式速報"
+      "result_source": "NPB公式",
+      "home_starter": "西　勇輝",
+      "away_starter": "玉村　昇悟",
+      "starter_source": "NPB公式 予告先発",
+      "starter_source_url": "https://npb.jp/announcement/starter/"
     }
   ],
-  "starter_updated_at": "2026-10-06T22:02:27+09:00",
-  "starter_count": 0
+  "starter_updated_at": "2026-10-07T09:14:39+09:00",
+  "starter_count": 2
 }
