@@ -1,6 +1,6 @@
 {
   "date": "2026-10-08",
-  "updated_at": "2026-10-08T00:35:36.668094+00:00",
+  "updated_at": "2026-10-08T13:05:17.444225+00:00",
   "model": "logistic_rolling_v1",
   "training_games": 8245,
   "training_latest_date": "2026-08-20",
@@ -24,7 +24,7 @@
       "confidence": "MEDIUM",
       "model": "logistic_rolling_v1",
       "rank": 1,
-      "status": "ready"
+      "status": "not_pregame"
     }
   ]
 }
