@@ -1,1 +1,12 @@
-{"date":null,"starters":{},"source":"NPB公式 予告先発"}
+{
+  "date": "2026-10-10",
+  "updated_at": "2026-10-09T21:51:42+09:00",
+  "starters": {
+    "巨人": "井上　温大",
+    "DeNA": "東　克樹",
+    "西武": "平良　海馬",
+    "日本ハム": "有原　航平"
+  },
+  "source": "NPB公式 予告先発",
+  "source_url": "https://npb.jp/announcement/starter/"
+}
