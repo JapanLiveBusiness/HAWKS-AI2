@@ -1,6 +1,6 @@
 {
   "date": "2026-10-10",
-  "updated_at": "2026-10-09T21:51:39+09:00",
+  "updated_at": "2026-10-10T09:23:46+09:00",
   "count": 2,
   "games": [
     {
@@ -38,6 +38,6 @@
       "starter_source_url": "https://npb.jp/announcement/starter/"
     }
   ],
-  "starter_updated_at": "2026-10-09T21:51:42+09:00",
+  "starter_updated_at": "2026-10-10T09:23:49+09:00",
   "starter_count": 4
 }
