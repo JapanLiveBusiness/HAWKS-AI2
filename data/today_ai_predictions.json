@@ -1,6 +1,6 @@
 {
-  "date": "2026-10-11",
-  "updated_at": "2026-10-11T12:23:36.328257+00:00",
+  "date": "2026-10-12",
+  "updated_at": "2026-10-12T00:07:10.789830+00:00",
   "model": "logistic_rolling_v1",
   "training_games": 8245,
   "training_latest_date": "2026-08-20",
@@ -24,24 +24,7 @@
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
       "rank": 1,
-      "status": "not_pregame"
-    },
-    {
-      "home": "巨人",
-      "away": "DeNA",
-      "pick": "巨人",
-      "win_probability": 55.1,
-      "home_win_probability": 55.1,
-      "raw_home_win_probability": 53.2,
-      "calibration_adjustment": 1.9,
-      "validation_sample_size": 275,
-      "validation_home_win_rate": 56.7,
-      "calibration_method": "season_10point_empirical_bayes",
-      "predicted_score": "4-3",
-      "confidence": "LOW",
-      "model": "logistic_rolling_v1",
-      "rank": 2,
-      "status": "not_pregame"
+      "status": "ready"
     }
   ]
 }
