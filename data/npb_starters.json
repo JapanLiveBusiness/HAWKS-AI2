@@ -1,1 +1,12 @@
-{"date":null,"starters":{},"source":"NPB公式 予告先発"}
+{
+  "date": "2026-10-14",
+  "updated_at": "2026-10-13T22:51:37+09:00",
+  "starters": {
+    "阪神": "村上　頌樹",
+    "DeNA": "平良　拳太郎",
+    "ソフトバンク": "Ｌ．モイネロ",
+    "日本ハム": "山﨑　福也"
+  },
+  "source": "NPB公式 予告先発",
+  "source_url": "https://npb.jp/announcement/starter/"
+}

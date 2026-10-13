@@ -1,6 +1,6 @@
 {
   "date": "2026-10-14",
-  "updated_at": "2026-10-13T11:19:22+09:00",
+  "updated_at": "2026-10-13T22:51:33+09:00",
   "count": 2,
   "games": [
     {
@@ -14,7 +14,11 @@
       "venue": "甲子園",
       "source_url": "https://npb.jp/games/2026/schedule_10_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_10_detail.html",
-      "result_source": "NPB公式"
+      "result_source": "NPB公式",
+      "home_starter": "村上　頌樹",
+      "away_starter": "平良　拳太郎",
+      "starter_source": "NPB公式 予告先発",
+      "starter_source_url": "https://npb.jp/announcement/starter/"
     },
     {
       "date": "2026-10-14",
@@ -27,9 +31,13 @@
       "venue": "みずほPayPay",
       "source_url": "https://npb.jp/games/2026/schedule_10_detail.html",
       "official_url": "https://npb.jp/games/2026/schedule_10_detail.html",
-      "result_source": "NPB公式"
+      "result_source": "NPB公式",
+      "home_starter": "Ｌ．モイネロ",
+      "away_starter": "山﨑　福也",
+      "starter_source": "NPB公式 予告先発",
+      "starter_source_url": "https://npb.jp/announcement/starter/"
     }
   ],
-  "starter_updated_at": null,
-  "starter_count": 0
+  "starter_updated_at": "2026-10-13T22:51:37+09:00",
+  "starter_count": 4
 }
