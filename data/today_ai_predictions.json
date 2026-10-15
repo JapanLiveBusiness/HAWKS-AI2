@@ -1,6 +1,6 @@
 {
-  "date": "2026-10-15",
-  "updated_at": "2026-10-15T11:05:50.900940+00:00",
+  "date": "2026-10-16",
+  "updated_at": "2026-10-15T23:26:20.456881+00:00",
   "model": "logistic_rolling_v1",
   "training_games": 8245,
   "training_latest_date": "2026-08-20",
@@ -24,7 +24,7 @@
       "confidence": "MEDIUM",
       "model": "logistic_rolling_v1",
       "rank": 1,
-      "status": "not_pregame"
+      "status": "ready"
     },
     {
       "home": "阪神",
@@ -41,7 +41,7 @@
       "confidence": "LOW",
       "model": "logistic_rolling_v1",
       "rank": 2,
-      "status": "not_pregame"
+      "status": "ready"
     }
   ]
 }

@@ -1,9 +1,11 @@
 {
   "date": "2026-10-16",
-  "updated_at": "2026-10-15T20:05:48+09:00",
+  "updated_at": "2026-10-16T08:26:16+09:00",
   "starters": {
     "阪神": "才木　浩人",
-    "DeNA": "片山　皓心"
+    "DeNA": "片山　皓心",
+    "ソフトバンク": "前田　悠伍",
+    "日本ハム": "加藤　貴之"
   },
   "source": "NPB公式 予告先発",
   "source_url": "https://npb.jp/announcement/starter/"
