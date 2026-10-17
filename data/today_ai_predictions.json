@@ -1,6 +1,6 @@
 {
-  "date": "2026-10-17",
-  "updated_at": "2026-10-17T10:22:40.349799+00:00",
+  "date": "2026-10-24",
+  "updated_at": "2026-10-17T22:46:59.005052+00:00",
   "model": "logistic_rolling_v1",
   "training_games": 8245,
   "training_latest_date": "2026-08-20",
@@ -10,21 +10,21 @@
   "calibration": "season_10point_empirical_bayes",
   "games": [
     {
-      "home": "阪神",
-      "away": "DeNA",
-      "pick": "阪神",
-      "win_probability": 56.3,
-      "home_win_probability": 56.3,
-      "raw_home_win_probability": 54.4,
-      "calibration_adjustment": 1.9,
-      "validation_sample_size": 275,
-      "validation_home_win_rate": 56.7,
-      "calibration_method": "season_10point_empirical_bayes",
-      "predicted_score": "4-3",
-      "confidence": "LOW",
+      "home": "DeNA",
+      "away": "ソフトバンク",
+      "pick": "ソフトバンク",
+      "win_probability": 61.1,
+      "home_win_probability": 38.9,
+      "raw_home_win_probability": 38.9,
+      "calibration_adjustment": 0.0,
+      "validation_sample_size": 9,
+      "validation_home_win_rate": null,
+      "calibration_method": "insufficient_history",
+      "predicted_score": "3-5",
+      "confidence": "MEDIUM",
       "model": "logistic_rolling_v1",
       "rank": 1,
-      "status": "not_pregame"
+      "status": "ready"
     }
   ]
 }
