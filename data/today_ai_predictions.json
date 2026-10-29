@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "updated_at": "2026-10-29T00:31:49.187548+00:00",
+  "updated_at": "2026-10-29T12:34:20.805477+00:00",
   "model": "logistic_rolling_v1",
   "training_games": 8245,
   "training_latest_date": "2026-08-20",
